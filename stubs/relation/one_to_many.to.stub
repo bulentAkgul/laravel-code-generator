@@ -1,0 +1,4 @@
+public function {{ from }}()
+{
+    return $this->belongsTo({{ From }}::class{{ from_key }}{{ to_key }});
+}

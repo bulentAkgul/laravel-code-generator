@@ -1,0 +1,28 @@
+{
+  "name": "bakgul/laravel-code-generator",
+  "description": "A package to insert codes to Laravel files.",
+  "authors": [
+    {
+      "name": "Bulent Akgul",
+      "email": "bulent.akgul@me.com"
+    }
+  ],
+  "require": {},
+  "require-dev": {
+    "bakgul/kernel": "@dev",
+    "bakgul/file-content": "@dev"
+  },
+  "autoload": {
+    "psr-4": {
+      "Bakgul\\CodeGenerator\\": "src/",
+      "Bakgul\\CodeGenerator\\Tests\\": "tests/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Bakgul\\CodeGenerator\\CodeGeneratorServiceProvider"
+      ]
+    }
+  }
+}

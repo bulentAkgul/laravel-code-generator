@@ -1,0 +1,4 @@
+public function {{ tos }}()
+{
+    return $this->belongsToMany({{ To }}::class{{ pivot_table }}{{ from_key }}{{ to_key }}){{ pivot_code }};
+}
