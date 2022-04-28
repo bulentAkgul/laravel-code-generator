@@ -19,7 +19,14 @@ class TestCase extends BaseTestCase
         $models = [];
 
         foreach (['User', 'Post'] as $name) {
-            $models[$name] = Path::glue([$this->testPackage['path'], 'src', 'Models', "{$name}.php"]);
+            $this->artisan("create:file {$name} model {$this->testPackage['name']}");
+            
+            $models[$name] = Path::glue([
+                $this->testPackage['path'],
+                Settings::standalone('laravel') ? 'app' : 'src',
+                'Models',
+                "{$name}.php"
+            ]);
         }
 
         return $models;
@@ -27,15 +34,34 @@ class TestCase extends BaseTestCase
 
     protected function callCommand(string $type, array $models, string $pivot = '', array $modifiers = [])
     {
+        $this->artisan("create:relation {$type} {$this->setArguments($models, $pivot, $modifiers)}");
+    }
+
+    private function setArguments($models, $pivot, $modifiers)
+    {
         $glue = Settings::seperators('modifier');
 
-        $this->artisan(
-            "code:rel {$this->testPackage['name']} {$type} " . implode(' ', array_filter([
-                $models[0] . Text::append(Arry::get($modifiers, 0) ?? '', $glue),
-                $models[1] . Text::append(Arry::get($modifiers, 1) ?? '', $glue),
-                $pivot . Text::append(Arry::get($modifiers, 2) ?? '', $glue)
-            ])) . Text::append(Arry::has(2, $models) ? "-T={$models[2]}" : '', ' ')
-        );
+        return implode(' ', array_filter([
+            $this->setFrom($models, $modifiers, $glue),
+            $this->setTo($models, $modifiers, $glue),
+            $this->setPivot($pivot, $modifiers, $glue)
+        ]));
+    }
+
+    private function setFrom($models, $modifiers, $glue)
+    {
+        return "{$this->testPackage['name']}/{$models[0]}"
+            . Text::append(Arry::get($modifiers, 0) ?? '', $glue);
+    }
+
+    private function setTo($models, $modifiers, $glue)
+    {
+        return $models[1] . Text::append(Arry::get($modifiers, 1) ?? '', $glue);
+    }
+
+    private function setPivot($pivot, $modifiers, $glue)
+    {
+        return $pivot . Text::append(Arry::get($modifiers, 2) ?? '', $glue);
     }
 
     protected function getPair($models, $name)

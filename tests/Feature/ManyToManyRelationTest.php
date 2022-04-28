@@ -3,16 +3,18 @@
 namespace Bakgul\CodeGenerator\Tests\Feature;
 
 use Bakgul\CodeGenerator\Tests\TestCase;
-use Bakgul\Kernel\Helpers\Text;
 use Bakgul\Kernel\Tasks\ConvertCase;
 use Bakgul\Kernel\Helpers\Convention;
 use Bakgul\Kernel\Helpers\Path;
+use Bakgul\Kernel\Tests\Tasks\SetupTest;
 
 class ManyToManyRelationTest extends TestCase
 {
     /** @test */
     public function many_to_many_with_defaults_will_be_added_to_models_and_create_pivot_migration()
     {
+        $this->testPackage = (new SetupTest)();
+
         $models = $this->setModels();
 
         $this->callCommand('mtm', array_keys($models));
@@ -43,6 +45,8 @@ class ManyToManyRelationTest extends TestCase
     /** @test */
     public function many_to_many_with_default_pivot_and_custom_foreign_ids_will_be_added_to_models_and_create_pivot_migration()
     {
+        $this->testPackage = (new SetupTest)();
+        
         $models = $this->setModels();
 
         $this->callCommand('mtm', array_keys($models), modifiers: ['for_u_id', 'for_p_id']);
@@ -73,6 +77,8 @@ class ManyToManyRelationTest extends TestCase
     /** @test */
     public function many_to_many_with_custom_pivot_and_default_foreign_ids_will_be_added_to_models_and_create_pivot_migration()
     {
+        $this->testPackage = (new SetupTest)();
+        
         $models = $this->setModels();
         $pivot = 'custom-pivot';
         $class = Convention::class($pivot);
@@ -105,6 +111,8 @@ class ManyToManyRelationTest extends TestCase
     /** @test */
     public function many_to_many_with_custom_pivot_and_foreign_ids_will_be_added_to_models_and_create_pivot_migration()
     {
+        $this->testPackage = (new SetupTest)();
+        
         $models = $this->setModels();
         $pivot = 'custom-pivot';
         $class = Convention::class($pivot);
@@ -139,6 +147,8 @@ class ManyToManyRelationTest extends TestCase
     /** @test */
     public function many_to_many_with_custom_pivot_and_different_pivot_class_and_custom_foreign_ids_will_be_added_to_models_and_create_pivot_migration()
     {
+        $this->testPackage = (new SetupTest)();
+        
         $models = $this->setModels();
         $table = 'pivot-table';
         $model = 'pivot-model';

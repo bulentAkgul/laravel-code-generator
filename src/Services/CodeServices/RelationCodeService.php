@@ -4,6 +4,8 @@ namespace Bakgul\CodeGenerator\Services\CodeServices;
 
 use Bakgul\CodeGenerator\CodeGenerator;
 use Bakgul\CodeGenerator\Services\RequestServices\CodeRequestServices\RelationCodeRequestService;
+use Bakgul\CodeGenerator\Tasks\HandlePivot;
+use Bakgul\CodeGenerator\Tasks\InsertRelation;
 use Bakgul\Kernel\Tasks\MutateStub;
 
 class RelationCodeService extends CodeGenerator
@@ -12,39 +14,20 @@ class RelationCodeService extends CodeGenerator
     {
         $request = RelationCodeRequestService::handle($request);
 
-        foreach (['From', 'To'] as $modelKey) {
-            self::insertCode($request, $modelKey);
-        }
+        self::insert($request);
 
-        self::handlePivot($request);
+        HandlePivot::_($request);
     }
 
-    private static function insertCode(array $request, $modelKey)
+    private static function insert(array $request)
     {
-        parent::insert($r = RelationCodeRequestService::modelCode($request, $modelKey), MutateStub::get($r));
+        array_map(fn ($x) => self::insertCode($request, $x), ['From', 'To']);
     }
 
-    private static function handlePivot(array $request)
+    private static function insertCode(array $request, string $modelKey)
     {
-        self::makeMigration($request);
-        self::makeModel($request);
-    }
-
-    private static function makeMigration($request)
-    {
-        // $fileRequest = RelationFileRequestService::create($request, 'migration');
-
-        // CompleteFolders::_($fileRequest['attr']['path']);
-
-        // MakeFile::_($fileRequest);
-    }
-
-    private static function makeModel($request)
-    {
-        // if (!$request['attr']['pivot_model']) return;
+        $request = RelationCodeRequestService::modelCode($request, $modelKey);
         
-        // $fileRequest = RelationFileRequestService::create($request, 'model');
-
-        // MakeFile::_($fileRequest);
+        InsertRelation::_($request, MutateStub::get($request));
     }
 }

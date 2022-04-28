@@ -11,7 +11,6 @@ use Bakgul\Kernel\Helpers\Text;
 use Bakgul\Kernel\Tasks\ConvertCase;
 use Bakgul\Kernel\Tasks\MutateStub;
 use Bakgul\Kernel\Helpers\Convention;
-use Illuminate\Support\Str;
 
 class RelationCodeRequestService extends CodeRequestService
 {
@@ -40,6 +39,7 @@ class RelationCodeRequestService extends CodeRequestService
         [$relation, $variation] = self::isolateParts($relation);
 
         return [
+            'job' => 'relation',
             'relation' => $r = self::setRelationType($relation),
             'variation' => $v = self::setVariation($variation),
             'stub' => self::setStub($r, $v)
@@ -63,23 +63,27 @@ class RelationCodeRequestService extends CodeRequestService
 
     private static function setSides(string $value, string $key): array
     {
-        return array_combine([$key, "{$key}_key"], self::isolateParts($value));
+        return array_combine([$key, "{$key}_key", "{$key}_package"], self::isolateParts($value));
     }
 
     private static function setPivot(array $request, array $from, array $to): array
     {
-        if (self::cannotHavePivot($request['relation'])) return ['pivot_model' => '', 'pivot_table' => ''];
+        $keys = ['pivot_model', 'pivot_table', 'pivot_package'];
+
+        if (self::cannotHavePivot($request['relation'])) return Arry::combine($keys, default: '');
 
         $table = self::setPivotTable($request, $from['from'], $to['to']);
-        return [
-            'pivot_table' => ConvertCase::snake($table),
-            'pivot_model' => self::setPivotModel($request['pivot'], $table),
-        ];
+        
+        return Arry::combine($keys, [
+            ConvertCase::snake($table),
+            self::setPivotModel($request['pivot'], $table),
+            self::setPackage($request['pivot'])
+        ]);
     }
 
     private static function cannotHavePivot(string $relation): bool
     {
-        return !Text::contains(['mtm', 'many_to_many'], $relation);
+        return Text::containsNone($relation, ['mtm', 'many_to_many']);
     }
 
     private static function setPivotTable(array $request, string $from, string $to): string
@@ -134,7 +138,7 @@ class RelationCodeRequestService extends CodeRequestService
 
     private static function setKey(string $key)
     {
-        return $key ? ', ' . Str::inject(ConvertCase::snake($key), "'") : '';
+        return $key ? ', ' . Text::inject(ConvertCase::snake($key), "'") : '';
     }
 
     private static function setTos(array $attr): array
@@ -143,7 +147,7 @@ class RelationCodeRequestService extends CodeRequestService
             'To' => Convention::class($attr['to']),
             'to' => Convention::method($attr['to'], true),
             'tos' => Convention::method($attr['to'], false),
-            'to_key' => self::setKey($attr['to_key'])
+            'to_key' => self::setKey($attr['to_key']),
         ];
     }
 
@@ -159,7 +163,7 @@ class RelationCodeRequestService extends CodeRequestService
     private static function setPivotTableName(array $attr): string
     {
         return $attr['pivot_table'] && !$attr['pivot_model'] || $attr['from_key']
-            ? ', ' . Str::inject(ConvertCase::snake($attr['pivot_table']), "'")
+            ? ', ' . Text::inject(ConvertCase::snake($attr['pivot_table']), "'")
             : '';
     }
 
@@ -172,7 +176,7 @@ class RelationCodeRequestService extends CodeRequestService
 
     private static function isolateParts(string $value)
     {
-        return [self::setBase($value), self::setModifier($value)];
+        return [self::setBase($value), self::setModifier($value), self::setPackage($value)];
     }
 
     private static function setBase(string $value)
@@ -183,6 +187,11 @@ class RelationCodeRequestService extends CodeRequestService
     private static function setModifier(?string $value, string $alt = '')
     {
         return Isolation::variation($value ?? '', false) ?: $alt;
+    }
+
+    private static function setPackage(string $value): string
+    {
+        return Isolation::subs($value);
     }
 
     public static function modelCode(array $request, string $modelKey)
@@ -203,9 +212,7 @@ class RelationCodeRequestService extends CodeRequestService
 
     private static function setTargetFile(array $request, string $modelKey)
     {
-        return Path::package(
-            $request['attr']['package'],
-            Path::glue(['src', 'Models', "{$request['map'][$modelKey]}.php"])
-        );
+        return Path::head($request['attr'][strtolower($modelKey) . "_package"] ?: $request['attr']["from_package"], 'src')
+            . Text::append(Path::glue(['Models', "{$request['map'][$modelKey]}.php"]));
     }
 }

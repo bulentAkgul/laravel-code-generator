@@ -5,12 +5,15 @@ namespace Bakgul\CodeGenerator\Tests\Feature;
 use Bakgul\CodeGenerator\Tests\TestCase;
 use Bakgul\Kernel\Tasks\ConvertCase;
 use Bakgul\Kernel\Helpers\Convention;
+use Bakgul\Kernel\Tests\Tasks\SetupTest;
 
 class OneToOneRelationTest extends TestCase
 {
     /** @test */
     public function one_to_one_with_default_foreign_ids_will_be_added_to_models()
     {
+        $this->testPackage = (new SetupTest)();
+
         $models = $this->setModels();
 
         $this->callCommand('oto', array_keys($models));
@@ -37,6 +40,8 @@ class OneToOneRelationTest extends TestCase
     /** @test */
     public function one_to_one_with_custom_foreign_ids_will_be_added_to_models()
     {
+        $this->testPackage = (new SetupTest)();
+
         $models = $this->setModels();
 
         $this->callCommand('oto', array_keys($models), modifiers: ['for_u_id', 'for_p_is']);
