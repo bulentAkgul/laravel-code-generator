@@ -32,9 +32,21 @@ class TestCase extends BaseTestCase
         return $models;
     }
 
-    protected function callCommand(string $type, array $models, string $pivot = '', array $modifiers = [])
+    protected function callCommand(string $type, array $models, string $pivot = '', array $modifiers = [], array $options = [])
     {
-        $this->artisan("create:relation {$type} {$this->setArguments($models, $pivot, $modifiers)}");
+        ray("create:relation {$type} {$this->setArguments($models, $pivot, $modifiers)} {$this->setOptions($options)}");
+        $this->artisan("create:relation {$type} {$this->setArguments($models, $pivot, $modifiers)} {$this->setOptions($options)}");
+    }
+
+    private function setOptions(array $options)
+    {
+        $ops = [];
+
+        foreach (array_filter($options) as $key => $value) {
+            $ops[] = $value === true ? "--{$key}" : "--{$key}={$value}";
+        }
+
+        return implode(' ', $ops);
     }
 
     private function setArguments($models, $pivot, $modifiers)

@@ -46,7 +46,7 @@ class ManyToManyRelationTest extends TestCase
     public function many_to_many_with_default_pivot_and_custom_foreign_ids_will_be_added_to_models_and_create_pivot_migration()
     {
         $this->testPackage = (new SetupTest)();
-        
+
         $models = $this->setModels();
 
         $this->callCommand('mtm', array_keys($models), modifiers: ['for_u_id', 'for_p_id']);
@@ -78,7 +78,7 @@ class ManyToManyRelationTest extends TestCase
     public function many_to_many_with_custom_pivot_and_default_foreign_ids_will_be_added_to_models_and_create_pivot_migration()
     {
         $this->testPackage = (new SetupTest)();
-        
+
         $models = $this->setModels();
         $pivot = 'custom-pivot';
         $class = Convention::class($pivot);
@@ -112,7 +112,7 @@ class ManyToManyRelationTest extends TestCase
     public function many_to_many_with_custom_pivot_and_foreign_ids_will_be_added_to_models_and_create_pivot_migration()
     {
         $this->testPackage = (new SetupTest)();
-        
+
         $models = $this->setModels();
         $pivot = 'custom-pivot';
         $class = Convention::class($pivot);
@@ -148,13 +148,13 @@ class ManyToManyRelationTest extends TestCase
     public function many_to_many_with_custom_pivot_and_different_pivot_class_and_custom_foreign_ids_will_be_added_to_models_and_create_pivot_migration()
     {
         $this->testPackage = (new SetupTest)();
-        
+
         $models = $this->setModels();
         $table = 'pivot-table';
         $model = 'pivot-model';
-        
+
         $this->callCommand('mtm', array_keys($models), $model, ['for_u_id', 'for_p_id', $table]);
-        
+
         $model = Convention::class($model);
         $table = ConvertCase::snake($table);
 
@@ -179,5 +179,23 @@ class ManyToManyRelationTest extends TestCase
                 $this->assertEquals($line, trim($content[$i]));
             }
         }
+    }
+
+    /** @test */
+    public function many_to_many_polymorphic()
+    {
+        $this->testPackage = (new SetupTest)();
+
+        $models = $this->setModels();
+        $pivot = 'images';
+        $model = 'image';
+
+        $this->callCommand(
+            'mtm',
+            array_keys($models),
+            $pivot,
+            ['', '', $model],
+            ['polymorphic' => true]
+        );
     }
 }

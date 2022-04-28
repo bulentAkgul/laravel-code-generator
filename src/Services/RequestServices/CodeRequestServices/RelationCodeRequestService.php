@@ -28,9 +28,8 @@ class RelationCodeRequestService extends CodeRequestService
             $request,
             self::setBases($request['relation']),
             $f = self::setSides($request['from'], 'from'),
-            $t = self::setSides($request['to'], 'to'),
+            $t = self::setSides($request['to'], 'to', $request['from']),
             self::setPivot($request, $f, $t),
-            self::setModelable(),
         );
     }
 
@@ -61,9 +60,9 @@ class RelationCodeRequestService extends CodeRequestService
         return MutateStub::set($relation, $variation);
     }
 
-    private static function setSides(string $value, string $key): array
+    private static function setSides(string $value, string $key, string $from = ''): array
     {
-        return array_combine([$key, "{$key}_key", "{$key}_package"], self::isolateParts($value));
+        return array_combine([$key, "{$key}_key", "{$key}_package"], self::isolateParts($value, $from));
     }
 
     private static function setPivot(array $request, array $from, array $to): array
@@ -73,11 +72,11 @@ class RelationCodeRequestService extends CodeRequestService
         if (self::cannotHavePivot($request['relation'])) return Arry::combine($keys, default: '');
 
         $table = self::setPivotTable($request, $from['from'], $to['to']);
-        
+
         return Arry::combine($keys, [
-            ConvertCase::snake($table),
             self::setPivotModel($request['pivot'], $table),
-            self::setPackage($request['pivot'])
+            ConvertCase::snake($table),
+            self::setPackage($request['pivot']) ?: $from['from_package']
         ]);
     }
 
@@ -110,11 +109,6 @@ class RelationCodeRequestService extends CodeRequestService
         if (self::hasDefaultPivot($pivot)) return $table;
 
         return self::setBase($pivot);
-    }
-
-    private static function setModelable()
-    {
-        return ['modelable' => Settings::main('create_missing_models')];
     }
 
     private static function generateMap(array $attr): array
@@ -174,9 +168,9 @@ class RelationCodeRequestService extends CodeRequestService
             : '';
     }
 
-    private static function isolateParts(string $value)
+    private static function isolateParts(string $value, string $from = '')
     {
-        return [self::setBase($value), self::setModifier($value), self::setPackage($value)];
+        return [self::setBase($value), self::setModifier($value), self::setPackage($value, $from)];
     }
 
     private static function setBase(string $value)
@@ -189,9 +183,9 @@ class RelationCodeRequestService extends CodeRequestService
         return Isolation::variation($value ?? '', false) ?: $alt;
     }
 
-    private static function setPackage(string $value): string
+    private static function setPackage(?string $value, string $from = ''): string
     {
-        return Isolation::subs($value);
+        return Isolation::subs($value ?? '') ?: Isolation::subs($from) ?: '';
     }
 
     public static function modelCode(array $request, string $modelKey)
