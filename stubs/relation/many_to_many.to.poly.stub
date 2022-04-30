@@ -1,0 +1,4 @@
+public function {{ froms }}()
+{
+    return $this->morphedByMany({{ From }}::class, '{{ able }}');
+}

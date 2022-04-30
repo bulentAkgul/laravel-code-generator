@@ -1,0 +1,4 @@
+public function {{ tos }}()
+{
+    return $this->hasManyThrough({{ To }}::class, {{ Mediator }}::class);
+}

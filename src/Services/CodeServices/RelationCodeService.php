@@ -3,31 +3,61 @@
 namespace Bakgul\CodeGenerator\Services\CodeServices;
 
 use Bakgul\CodeGenerator\CodeGenerator;
-use Bakgul\CodeGenerator\Services\RequestServices\CodeRequestServices\RelationCodeRequestService;
+use Bakgul\CodeGenerator\Services\RequestServices\RelationRequestService;
+use Bakgul\CodeGenerator\Tasks\ExtendRequestForSide;
 use Bakgul\CodeGenerator\Tasks\HandlePivot;
+use Bakgul\CodeGenerator\Tasks\HandlePolymorphy;
+use Bakgul\CodeGenerator\Tasks\HandleThrough;
 use Bakgul\CodeGenerator\Tasks\InsertRelation;
+use Bakgul\CodeGenerator\Tasks\InsertForeignKey;
 use Bakgul\Kernel\Tasks\MutateStub;
 
 class RelationCodeService extends CodeGenerator
 {
     public static function create($request)
     {
-        $request = RelationCodeRequestService::handle($request);
+        $request = RelationRequestService::handle($request);
 
-        self::insert($request);
+        self::insertMethods($request);
 
-        HandlePivot::_($request);
+        self::insertForeignKeys($request);
+
+        self::handleMediator($request);
     }
 
-    private static function insert(array $request)
+    private static function insertMethods(array $request)
     {
-        array_map(fn ($x) => self::insertCode($request, $x), ['From', 'To']);
+        foreach (self::sides($request) as $side) {
+            $request = ExtendRequestForSide::method($request, $side);
+
+            InsertRelation::_($request, MutateStub::get($request));
+        }
     }
 
-    private static function insertCode(array $request, string $modelKey)
+    private static function sides(array $requesrt): array
     {
-        $request = RelationCodeRequestService::modelCode($request, $modelKey);
-        
-        InsertRelation::_($request, MutateStub::get($request));
+        return $requesrt['attr']['is_through'] ? ['From'] : ['From', 'To'];
+    }
+
+    private static function insertForeignKeys(array $request)
+    {
+        if (self::hasNotForeignKey($request['attr'])) return;
+
+        InsertForeignKey::_(ExtendRequestForSide::foreignKey($request, 'to'));
+    }
+
+    private static function hasNotForeignKey(array $attr): bool
+    {
+        return $attr['is_mtm'] || $attr['is_through'] || $attr['polymorphic'];
+    }
+
+    private static function handleMediator(array $request)
+    {
+        match (true) {
+            $request['attr']['is_mtm'] => HandlePivot::_($request),
+            $request['attr']['is_through'] => HandleThrough::_($request),
+            $request['attr']['polymorphic'] => HandlePolymorphy::_($request),
+            default => null
+        };
     }
 }

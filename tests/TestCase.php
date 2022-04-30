@@ -18,7 +18,7 @@ class TestCase extends BaseTestCase
 
         $models = [];
 
-        foreach (['User', 'Post'] as $name) {
+        foreach (['Post', 'Comment'] as $name) {
             $this->artisan("create:file {$name} model {$this->testPackage['name']}");
             
             $models[$name] = Path::glue([
@@ -34,7 +34,6 @@ class TestCase extends BaseTestCase
 
     protected function callCommand(string $type, array $models, string $pivot = '', array $modifiers = [], array $options = [])
     {
-        ray("create:relation {$type} {$this->setArguments($models, $pivot, $modifiers)} {$this->setOptions($options)}");
         $this->artisan("create:relation {$type} {$this->setArguments($models, $pivot, $modifiers)} {$this->setOptions($options)}");
     }
 

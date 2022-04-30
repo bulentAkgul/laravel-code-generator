@@ -2,12 +2,12 @@
 
 namespace Bakgul\CodeGenerator\Tasks;
 
-use Bakgul\FileContent\Tasks\Register;
 use Bakgul\Kernel\Helpers\Arry;
+use Bakgul\Kernel\Helpers\Convention;
 use Bakgul\Kernel\Helpers\Folder;
 use Bakgul\Kernel\Helpers\Path;
-use Bakgul\Kernel\Helpers\Pluralizer;
 use Bakgul\Kernel\Helpers\Settings;
+use Bakgul\Kernel\Helpers\Text;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Str;
 
@@ -17,7 +17,7 @@ class HandlePivot
     {
         if (!class_exists('\Bakgul\FileCreator\FileCreatorServiceProvider')) return;
 
-        $request['attr']['pivot_model']
+        $request['attr']['mediator']
             ? self::withModel($request['attr'])
             : self::withoutModel($request['attr']);
 
@@ -26,14 +26,25 @@ class HandlePivot
 
     private static function withModel($attr)
     {
-        Settings::set('files.migration.name_count', 'X');
+        if (self::modelExists($attr)) return self::withoutModel($attr);
 
+        Settings::set('files.migration.name_count', 'X');
+        
         Artisan::call(implode(' ', array_filter([
             "create:file",
-            $attr['pivot_model'],
+            $attr['mediator'],
             "model:pivot",
-            $attr['pivot_package']
+            $attr['mediator_package']
         ])));
+    }
+
+    private static function modelExists(array $attr)
+    {
+        return file_exists(Path::glue([
+            Path::head($attr['mediator_package'], 'src'),
+            'Models',
+            Convention::class($attr['mediator']) . '.php'
+        ]));
     }
 
     private static function withoutModel($attr)
@@ -43,9 +54,9 @@ class HandlePivot
 
         Artisan::call(implode(' ', array_filter([
             "create:file",
-            $attr['pivot_table'],
+            $attr['mediator_table'],
             "migration",
-            $attr['pivot_package']
+            $attr['mediator_package']
         ])));
     }
 
@@ -53,46 +64,45 @@ class HandlePivot
     {
         $request['attr']['target_file'] = self::getMigration($request['attr']);
 
-        if (!$request['attr']['target_file']) return;
-
         $request['map']['lines'] = self::makeCode($request);
-        $request['map']['imports'] = '';
 
-        Register::_($request, [], [
-            'start' => ['$table->id()', 0],
-            'end' => ['$table->timestamps()', 0],
-            'part' => 'lines',
-            'repeat' => 2,
-            'isSortable' => false,
-            'eol' => ';'
-        ], 'lines', 'block');
+        InsertForeignKey::_($request);
     }
 
     private static function getMigration(array $attr): ?string
     {
         return Arry::get(array_filter(
             Folder::files(
-                Path::package($attr['pivot_package']),
+                Path::package($attr['mediator_package']),
                 Path::glue(['database', 'migrations'])
             ),
-            fn ($x) => str_contains($x, $attr['pivot_table'])
+            fn ($x) => str_contains($x, $attr['mediator_table'])
         ), 0);
     }
 
     private static function makeCode(array $request)
     {
         return $request['attr']['polymorphic']
-            ? [
-                '$table->string("' . Str::singular($request['attr']['pivot_table']) . 'able_type")',
-                '$table->integer("' . Str::singular($request['attr']['pivot_table']) . 'able_id")',
-            ] : [
-                '$table->foreignId("' . self::key($request['map'], 'from') . '")',
-                '$table->foreignId("' . self::key($request['map'], 'to') . '")',
-            ];
+            ? HandlePolymorphy::_($request, true)
+            : self::setForeingKeys($request);
     }
 
-    private static function key(array $map, string $key)
+    private static function setForeingKeys(array $request): array
     {
-        return $map['from_key'] ?: "{$map[$key]}_id";
+        return array_map(fn ($x) => self::setLine($request, $x), ['from', 'to']);
+    }
+
+    private static function setLine(array $request, string $key): string
+    {
+        return '$table->foreignId("'
+            . self::key($request, $key)
+            . '")->constrained('
+            . Text::inject($request['map'][Str::plural($key)], "'")
+            . ');';
+    }
+
+    private static function key(array $request, string $key)
+    {
+        return $request['attr']['from_key'] ?: "{$request['map'][$key]}_id";
     }
 }

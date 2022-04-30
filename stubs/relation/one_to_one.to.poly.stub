@@ -1,0 +1,4 @@
+public function {{ able }}()
+{
+    return $this->morphTo();
+}

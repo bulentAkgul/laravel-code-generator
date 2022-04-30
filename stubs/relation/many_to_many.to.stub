@@ -1,4 +1,4 @@
 public function {{ froms }}()
 {
-    return $this->belongsToMany({{ From }}::class{{ pivot_table }}{{ from_key }}{{ to_key }}){{ pivot_code }};
+    return $this->belongsToMany({{ From }}::class{{ mediator_table }}{{ from_key }}{{ to_key }}){{ mediator_code }};
 }

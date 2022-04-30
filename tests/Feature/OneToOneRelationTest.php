@@ -10,6 +10,51 @@ use Bakgul\Kernel\Tests\Tasks\SetupTest;
 class OneToOneRelationTest extends TestCase
 {
     /** @test */
+    public function temp_test()
+    {
+        ray()->clearAll();
+        $this->testPackage = (new SetupTest)();
+
+        $this->setModels();
+
+        $this->artisan([
+            0 => 'create:relation oto post comment',
+            1 => 'create:relation otm post comment',
+            2 => 'create:relation oto post comment -p',  // polymorphic
+            3 => 'create:relation otm post comment -p',  // polymorphic
+            4 => 'create:relation oto post comment image',  // through
+            5 => 'create:relation otm post comment image',  // through
+            6 => 'create:relation oto post comment image -p',  // polymorphic (ignore through)
+            7 => 'create:relation otm post comment image -p',  // polymorphic (ignore through)
+            8 => 'create:relation mtm post comment', // pivot
+            9 => 'create:relation mtm post comment -p', // pivot + polymorphic
+            10 => 'create:relation mtm post comment images', // pivot
+            11 => 'create:relation mtm post comment images:y', // pivot
+            12 => 'create:relation mtm post comment images -p', // pivot + polymorphic
+        ][12]);
+
+        return;
+        
+
+        $commands = [];
+        foreach (['oto', 'otm', 'mtm'] as $type) {
+            foreach (['', 'image'] as $middleman) {
+                foreach ([false, true] as $p) {
+                    $command = implode(' ', array_filter([
+                        'create:relation',
+                        $type,
+                        "{$this->testPackage['name']}/user",
+                        'post',
+                        $middleman,
+                        $p ? '-p' : ''
+                    ]));
+                    $commands[] = $command;
+                    // $this->artisan($command);
+                }
+            }
+        }
+    }
+    /** @test */
     public function one_to_one_with_default_foreign_ids_will_be_added_to_models()
     {
         $this->testPackage = (new SetupTest)();
