@@ -21,10 +21,12 @@ class MakeMigrationLine
     {
         if ($key == 'mediator') return "{$request['map']['from']}_id";
 
-        return $request['map']['to_key'] ?: ($request['attr']['is_through']
-            ? "{$request['map']['mediator']}_id"
-            : "{$request['map']['from']}_id"
-        );
+        return $request['map']['to_key']
+            ? trim($request['map']['to_key'], " ,'")
+            : ($request['attr']['is_through']
+                ? "{$request['map']['mediator']}_id"
+                : "{$request['map']['from']}_id"
+            );
     }
 
     private static function table(array $request, string $key): string

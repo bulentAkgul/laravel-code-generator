@@ -3,16 +3,30 @@
 namespace Bakgul\CodeGenerator\Tasks;
 
 use Bakgul\Kernel\Helpers\Arry;
+use Bakgul\Kernel\Helpers\Convention;
 use Bakgul\Kernel\Helpers\Isolation;
 use Bakgul\Kernel\Tasks\ConvertCase;
 
 class SetMediatorAttr
 {
-    private static $keys = ['mediator', 'mediator_table', 'mediator_package', 'mediator_column'];
+    private static $keys = ['mediator', 'mediator_table', 'mediator_package', 'mediator_key'];
 
     public static function _(array $attr): array
     {
-        return Arry::combine(self::$keys, self::setValues($attr), '');
+        return [
+            ...Arry::combine(self::$keys, self::setValues($attr), ''),
+            ...self::defaults($attr),
+        ];
+    }
+
+    private static function defaults(array $attr): array
+    {
+        $name = self::makePivotName($attr);
+
+        return [
+            'default_pivot_table' => Convention::table($name, true),
+            'default_pivot_model' => Convention::class($name),
+        ];
     }
 
     private static function setValues($attr): array
@@ -39,7 +53,7 @@ class SetMediatorAttr
         $table = self::setPivotTable($attr);
 
         return [
-            self::setPivotModel($attr['mediator'], $table),
+            self::setPivotModel($attr['mediator'], $attr['model'], $table),
             ConvertCase::snake($table),
             self::setPackage($attr),
             ''
@@ -70,14 +84,14 @@ class SetMediatorAttr
             : implode('-', Arry::sort([$attr['from'], $attr['to']]));
     }
 
-    private static function setPivotModel(?string $pivot, string $table)
+    private static function setPivotModel(?string $pivot, bool $model, string $table)
     {
-        return $pivot == null ? '' : self::setModelName($pivot, $table);
+        return $pivot == null && !$model ? '' : self::setModelName($pivot, $table);
     }
 
-    private static function setModelName(string $pivot, string $table): string
+    private static function setModelName(?string $pivot, string $table): string
     {
-        $model = Isolation::variation($pivot);
+        $model = Isolation::variation($pivot ?? '') ?: $table;
 
         return in_array($model, ['t', 'y', 'true', 'yes']) ? $table : $model;
     }

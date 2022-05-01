@@ -8,7 +8,7 @@ use Bakgul\Kernel\Helpers\Convention;
 use Bakgul\Kernel\Helpers\Path;
 use Bakgul\Kernel\Tests\Tasks\SetupTest;
 
-class ManyToManyRelationTest extends TestCase
+class ManyToManyTest extends TestCase
 {
     /** @test */
     public function many_to_many_with_defaults_will_be_added_to_models_and_create_pivot_migration()

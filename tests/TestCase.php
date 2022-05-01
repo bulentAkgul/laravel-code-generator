@@ -5,84 +5,88 @@ namespace Bakgul\CodeGenerator\Tests;
 use Bakgul\Kernel\Helpers\Arry;
 use Bakgul\Kernel\Helpers\Path;
 use Bakgul\Kernel\Helpers\Settings;
-use Bakgul\Kernel\Helpers\Text;
 use Bakgul\Kernel\Tasks\ConvertCase;
 use Bakgul\Kernel\Tests\TestCase as BaseTestCase;
 use Carbon\Carbon;
 
 class TestCase extends BaseTestCase
 {
-    protected function setModels()
+    const ROLES = ['from', 'to', 'mediator'];
+    protected $mode;
+
+    protected function create(string $specs)
+    {
+        $this->artisan("create:relation {$this->mode} {$specs}");
+    }
+
+    protected function setModels(array $names, array $packages = ['', '', ''])
     {
         config()->set('packagify.file.model.pairs', ['']);
 
         $models = [];
 
-        foreach (['Post', 'Comment'] as $name) {
-            $this->artisan("create:file {$name} model {$this->testPackage['name']}");
-            
-            $models[$name] = Path::glue([
-                $this->testPackage['path'],
-                Settings::standalone('laravel') ? 'app' : 'src',
-                'Models',
-                "{$name}.php"
-            ]);
+        foreach ($names as $i => $name) {
+            if ($name) {
+                $this->createModel($name, $packages[$i]);
+                $models[self::ROLES[$i]] = [$name, $this->modelPath($name, $packages[$i]), $packages[$i]];
+            } else {
+                $models[self::ROLES[$i]] = [];
+            }
         }
 
         return $models;
     }
 
-    protected function callCommand(string $type, array $models, string $pivot = '', array $modifiers = [], array $options = [])
+    private function createModel(string $name, string $package)
     {
-        $this->artisan("create:relation {$type} {$this->setArguments($models, $pivot, $modifiers)} {$this->setOptions($options)}");
+        $this->artisan(implode(' ', array_filter([
+            "create:file {$name} model",
+            Settings::standalone() ? '' : ($package ?: $this->testPackage['name'])
+        ])));
     }
 
-    private function setOptions(array $options)
+    protected function migrations(array $names, array $packages = ['', '', ''])
     {
-        $ops = [];
+        $migrations = [];
 
-        foreach (array_filter($options) as $key => $value) {
-            $ops[] = $value === true ? "--{$key}" : "--{$key}={$value}";
+        foreach ($names as $i => $name) {
+            $migrations[self::ROLES[$i]] = $name ? [$name, $this->migrationPath($name, $packages[$i])] : [];
         }
 
-        return implode(' ', $ops);
-    }
-
-    private function setArguments($models, $pivot, $modifiers)
-    {
-        $glue = Settings::seperators('modifier');
-
-        return implode(' ', array_filter([
-            $this->setFrom($models, $modifiers, $glue),
-            $this->setTo($models, $modifiers, $glue),
-            $this->setPivot($pivot, $modifiers, $glue)
-        ]));
-    }
-
-    private function setFrom($models, $modifiers, $glue)
-    {
-        return "{$this->testPackage['name']}/{$models[0]}"
-            . Text::append(Arry::get($modifiers, 0) ?? '', $glue);
-    }
-
-    private function setTo($models, $modifiers, $glue)
-    {
-        return $models[1] . Text::append(Arry::get($modifiers, 1) ?? '', $glue);
-    }
-
-    private function setPivot($pivot, $modifiers, $glue)
-    {
-        return $pivot . Text::append(Arry::get($modifiers, 2) ?? '', $glue);
+        return $migrations;
     }
 
     protected function getPair($models, $name)
     {
-        return array_values(array_filter(array_keys($models), fn ($x) => $x != $name))[0];
+        return array_values(array_filter(
+            array_map(fn ($x) => Arry::get($x, 0), array_values($models)),
+            fn ($x) => $x != $name
+        ));
     }
 
-    protected function migration(string $pivot)
+    private function modelPath(string $name, string $package)
     {
-        return Carbon::today()->format('Y_m_d') . "_000000_create_{$pivot}_table.php";
+        return Path::glue([
+            $package ? Path::package($package) : $this->testPackage['path'],
+            Settings::standalone('laravel') ? 'app' : 'src',
+            'Models',
+            "{$name}.php"
+        ]);
+    }
+
+    protected function migration(string $name)
+    {
+        return Carbon::today()->format('Y_m_d') . "_000000_create_{$name}_table.php";
+    }
+
+    private function migrationPath(string $name, string $package)
+    {
+        return Path::glue([
+            $package ? Path::package($package) : $this->testPackage['path'],
+            'database',
+            'migrations',
+            self::migration($name)
+        ]);
     }
 
     protected function database($folder)

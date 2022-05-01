@@ -17,6 +17,6 @@ class HandlePolymorphy
 
         $request['attr']['target_file'] = FindMigration::_($request);
 
-        InsertForeignKey::_($request);
+        InsertCode::key($request);
     }
 }

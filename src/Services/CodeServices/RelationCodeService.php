@@ -9,7 +9,7 @@ use Bakgul\CodeGenerator\Tasks\HandlePivot;
 use Bakgul\CodeGenerator\Tasks\HandlePolymorphy;
 use Bakgul\CodeGenerator\Tasks\HandleThrough;
 use Bakgul\CodeGenerator\Tasks\InsertRelation;
-use Bakgul\CodeGenerator\Tasks\InsertForeignKey;
+use Bakgul\CodeGenerator\Tasks\InsertCode;
 use Bakgul\Kernel\Tasks\MutateStub;
 
 class RelationCodeService extends CodeGenerator
@@ -43,7 +43,7 @@ class RelationCodeService extends CodeGenerator
     {
         if (self::hasNotForeignKey($request['attr'])) return;
 
-        InsertForeignKey::_(ExtendRequestForSide::foreignKey($request, 'to'));
+        InsertCode::key(ExtendRequestForSide::foreignKey($request, 'to'));
     }
 
     private static function hasNotForeignKey(array $attr): bool

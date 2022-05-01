@@ -2,13 +2,14 @@
 
 namespace Bakgul\CodeGenerator\Tasks;
 
+use Bakgul\Kernel\Functions\CreateFileRequest;
+use Bakgul\Kernel\Tasks\SimulateArtisanCall;
 use Bakgul\Kernel\Helpers\Arry;
 use Bakgul\Kernel\Helpers\Convention;
 use Bakgul\Kernel\Helpers\Folder;
 use Bakgul\Kernel\Helpers\Path;
 use Bakgul\Kernel\Helpers\Settings;
 use Bakgul\Kernel\Helpers\Text;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Str;
 
 class HandlePivot
@@ -18,24 +19,25 @@ class HandlePivot
         if (!class_exists('\Bakgul\FileCreator\FileCreatorServiceProvider')) return;
 
         $request['attr']['mediator']
-            ? self::withModel($request['attr'])
+            ? self::withModel($request)
             : self::withoutModel($request['attr']);
 
         self::addColumns($request);
     }
 
-    private static function withModel($attr)
+    private static function withModel($request)
     {
-        if (self::modelExists($attr)) return self::withoutModel($attr);
+        if (self::modelExists($request['attr'])) return self::withoutModel($request['attr']);
 
         Settings::set('files.migration.name_count', 'X');
-        
-        Artisan::call(implode(' ', array_filter([
-            "create:file",
-            $attr['mediator'],
-            "model:pivot",
-            $attr['mediator_package']
-        ])));
+
+        (new SimulateArtisanCall)(CreateFileRequest::_([
+            'name' => $request['attr']['mediator'],
+            'type' => 'model:pivot',
+            'package' => $request['attr']['mediator_package'],
+        ]));
+
+        self::addTable($request);
     }
 
     private static function modelExists(array $attr)
@@ -47,17 +49,25 @@ class HandlePivot
         ]));
     }
 
+    private static function addTable(array $request)
+    {
+        $request['attr']['target_file'] = self::getModel($request);
+
+        $request['map']['lines'] = 'protected $table = ' . Text::inject($request['attr']['mediator_table'], "'");
+
+        InsertCode::table($request);
+    }
+
     private static function withoutModel($attr)
     {
         Settings::set('files.migration.pairs', ['']);
         Settings::set('files.migration.name_count', 'X');
 
-        Artisan::call(implode(' ', array_filter([
-            "create:file",
-            $attr['mediator_table'],
-            "migration",
-            $attr['mediator_package']
-        ])));
+        (new SimulateArtisanCall)(CreateFileRequest::_([
+            'name' => $attr['mediator_table'],
+            'type' => 'migration',
+            'package' => $attr['mediator_package'],
+        ]));
     }
 
     private static function addColumns($request)
@@ -66,18 +76,23 @@ class HandlePivot
 
         $request['map']['lines'] = self::makeCode($request);
 
-        InsertForeignKey::_($request);
+        InsertCode::key($request);
+    }
+
+    private static function getModel(array $request): ?string
+    {
+        return Arry::get(array_filter(array_merge(
+            Folder::files(Path::package($request['attr']['mediator_package'])),
+            Folder::files(Path::head(family: 'src'))
+        ), fn ($x) => str_contains($x, "{$request['map']['Mediator']}.php")), 0);
     }
 
     private static function getMigration(array $attr): ?string
     {
-        return Arry::get(array_filter(
-            Folder::files(
-                Path::package($attr['mediator_package']),
-                Path::glue(['database', 'migrations'])
-            ),
-            fn ($x) => str_contains($x, $attr['mediator_table'])
-        ), 0);
+        return Arry::get(array_filter(array_merge(
+            Folder::files(Path::package($attr['mediator_package'])),
+            Folder::files(Path::glue([base_path(), 'database', 'migrations']))
+        ), fn ($x) => str_contains($x, "create_{$attr['mediator_table']}_table")), 0);
     }
 
     private static function makeCode(array $request)

@@ -5,7 +5,6 @@ namespace Bakgul\CodeGenerator\Tasks;
 use Bakgul\Kernel\Helpers\Path;
 use Bakgul\Kernel\Helpers\Settings;
 use Bakgul\Kernel\Helpers\Text;
-use Bakgul\Kernel\Tasks\ConvertCase;
 use Illuminate\Support\Str;
 
 class ExtendRequestForSide
@@ -17,8 +16,21 @@ class ExtendRequestForSide
                 'stub' => self::setStub($request['attr'], $side),
                 'target_file' => self::setTargetModel($request, $side)
             ]),
-            'map' => $request['map']
+            'map' => array_merge($request['map'], [
+                'to_key' => self::setToKey($request)
+            ])
         ];
+    }
+
+    private static function setToKey(array $request): string
+    {
+        if ($request['map']['to_key']) return $request['map']['to_key'];
+        
+        if ($request['attr']['is_through']) return '';
+
+        $key = $request['map']['from_key'] ? "{$request['map']['from']}_id" : '';
+
+        return Text::append(Text::inject($key, "'"), ', ');
     }
 
     public static function foreignKey(array $request, string $side): array
@@ -52,7 +64,7 @@ class ExtendRequestForSide
         ]);
 
         if (file_exists($path)) return $path;
-
+        
         return FindModel::_($request['map'][$side]);
     }
 

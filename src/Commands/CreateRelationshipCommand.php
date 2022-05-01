@@ -21,6 +21,7 @@ class CreateRelationshipCommand extends Command
         {from : package/model:column}
         {to : package/model:column}
         {mediator? : package/table:model || package/model:column}
+        {--m|model}
         {--p|polymorphic}
     ';
 
@@ -46,6 +47,8 @@ class CreateRelationshipCommand extends Command
                 When it\'s specified, "Has One Through" or "Has Many Through" will be generated.
                 Otherwise, "One to One" or "One to Many" will be generated.
                 The second pattern will be used.
+        - model: If this is true as relation of "mtm" is created, and if a mediator model name isn\'t being
+                 specified, a model with the same name as mediator migration will be generated.
         - polymorphic: if this is through, relationship will be polymorphic and mediator will be ignored.
     ';
 

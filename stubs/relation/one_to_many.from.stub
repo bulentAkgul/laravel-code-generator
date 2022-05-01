@@ -1,4 +1,4 @@
 public function {{ tos }}()
 {
-    return $this->hasMany({{ To }}::class{{ from_key }}{{ to_key }});
+    return $this->hasMany({{ To }}::class{{ to_key }}{{ from_key }});
 }

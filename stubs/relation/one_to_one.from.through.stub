@@ -1,4 +1,4 @@
 public function {{ mediator }}{{ To }}()
 {
-    return $this->hasOneThrough({{ To }}::class, {{ Mediator }}::class);
+    return $this->hasOneThrough({{ To }}::class, {{ Mediator }}::class{{ mediator_key }}{{ to_key }});
 }

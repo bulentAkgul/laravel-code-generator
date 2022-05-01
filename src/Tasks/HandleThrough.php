@@ -2,6 +2,8 @@
 
 namespace Bakgul\CodeGenerator\Tasks;
 
+use Bakgul\Kernel\Functions\CreateFileRequest;
+use Bakgul\Kernel\Tasks\SimulateArtisanCall;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Str;
 
@@ -16,12 +18,11 @@ class HandleThrough
 
     private static function createMediators(array $attr)
     {
-        Artisan::call(implode(' ', array_filter([
-            "create:file",
-            $attr['mediator'],
-            "model",
-            $attr['mediator_package']
-        ])));
+        (new SimulateArtisanCall)(CreateFileRequest::_([
+            'name' => $attr['mediator'],
+            'type' => 'model',
+            'package' => $attr['mediator_package'],
+        ]));
     }
 
     private static function addColumns(array $request)
@@ -37,6 +38,6 @@ class HandleThrough
 
         $request['map']['lines'] = MakeMigrationLine::_($request, $key);
 
-        InsertForeignKey::_($request);
+        InsertCode::key($request);
     }
 }

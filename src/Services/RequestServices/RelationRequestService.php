@@ -86,7 +86,9 @@ class RelationRequestService extends CodeGenerator
 
     private static function setPackage(?string $value): string
     {
-        return Isolation::subs($value ?? '') ?: FindPackage::_($value);
+        return Settings::standalone() ? '' : (
+            Isolation::subs($value ?? '') ?: FindPackage::_($value)
+        );
     }
 
     private static function generateMap(array $attr): array
@@ -132,7 +134,6 @@ class RelationRequestService extends CodeGenerator
         return [
             ...$attr,
             ...SetMediatorAttr::_($attr),
-            'to_package' => $attr['to_package'] ?: $attr['from_package'],
         ];
     }
 

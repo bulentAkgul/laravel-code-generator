@@ -15,22 +15,28 @@ class SetMediatorMap
             'mediator' => Convention::method($attr['mediator'] ?? ''),
             'mediators' => Str::plural($attr['mediator']),
             'Mediator' => $m = Convention::class($attr['mediator'] ?? ''),
-            'mediator_table' => self::setMediatorTable($attr),
-            'mediator_code' => self::setMediatorCode($attr, $m),
+            'mediator_table' => self::setTable($attr),
+            'mediator_code' => self::setCode($m),
+            'mediator_key' => self::setKey($attr)
         ];
     }
 
-    private static function setMediatorTable(array $attr): string
+    private static function setTable(array $attr): string
     {
         return $attr['mediator_table'] && !$attr['mediator'] || $attr['from_key']
             ? ', ' . Text::inject(ConvertCase::snake($attr['mediator_table']), "'")
             : '';
     }
 
-    private static function setMediatorCode(array $attr, string $model): string
+    private static function setCode(string $model): string
     {
-        return $model && $attr['mediator'] != $attr['mediator_table']
-        ? "->using({$model}::class)"
-        : '';
+        return $model ? "->using({$model}::class)" : '';
+    }
+
+    private static function setKey(array $attr): string
+    {
+        return Text::append(Text::inject($attr['mediator_key'] ?: (
+            $attr['to_key'] ? ConvertCase::snake($attr['from']) . '_id' : ''
+        ), "'"), ', ');
     }
 }
