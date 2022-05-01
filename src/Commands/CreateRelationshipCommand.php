@@ -8,6 +8,7 @@ use Bakgul\Kernel\Concerns\HasRequest;
 use Bakgul\Kernel\Concerns\Sharable;
 use Bakgul\Evaluator\Concerns\ShouldBeEvaluated;
 use Bakgul\Evaluator\Services\RelationCommandEvaluationService;
+use Bakgul\Kernel\Helpers\Settings;
 use Illuminate\Console\Command;
 
 class CreateRelationshipCommand extends Command
@@ -61,9 +62,10 @@ class CreateRelationshipCommand extends Command
     {
         $this->prepareRequest();
 
-        $this->evaluate();
-
-        if ($this->stop()) return $this->terminate();
+        if (Settings::evaluator('evaluate_commands')) {
+            $this->evaluate();
+            if ($this->stop()) return $this->terminate();
+        }
 
         RelationCodeService::create($this->request);
     }
