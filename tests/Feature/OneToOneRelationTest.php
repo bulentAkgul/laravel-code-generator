@@ -12,7 +12,6 @@ class OneToOneRelationTest extends TestCase
     /** @test */
     public function temp_test()
     {
-        ray()->clearAll();
         $this->testPackage = (new SetupTest)();
 
         $this->setModels();
