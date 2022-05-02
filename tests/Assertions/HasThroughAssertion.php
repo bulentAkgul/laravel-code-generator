@@ -2,6 +2,7 @@
 
 namespace Bakgul\CodeGenerator\Tests\Assertions;
 
+use Bakgul\CodeGenerator\Tests\Assertions\AssertionHelpers\AppendUses;
 use Bakgul\Kernel\Helpers\Text;
 use Bakgul\Kernel\Tasks\ConvertCase;
 use Illuminate\Support\Arr;
@@ -25,12 +26,14 @@ trait HasThroughAssertion
             $this->assertFileExists($model[1]);
 
             $pairs = $this->getPair($models, $model[0]);
+            
+            $add = count($$role[4]);
 
-            $expectation = [
-                7 => "class {$model[0]} extends Model"
+            $expectation = AppendUses::_($$role[4], $add) + [
+                7 + $add => "class {$model[0]} extends Model"
             ] + ($role == 'from' ? [
-                11 => $this->setFunction($pairs, $role),
-                13 => $this->codeLine($from, $to, $mediator, $pairs)
+                11 + $add => $this->setFunction($pairs, $role),
+                13 + $add => $this->codeLine($from, $to, $mediator, $pairs)
             ] : []);
 
             $content = file($model[1]);

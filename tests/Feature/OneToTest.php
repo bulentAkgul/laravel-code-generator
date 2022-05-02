@@ -78,6 +78,11 @@ class OneToTest extends TestCase
 
                 [$from, $to, $models] = $this->prepare(['', 'user', ''], [$this->testPackage['name'], 'users', '']);
 
+                if ($isAlone == 'pl') {
+                    $from[4] = ['use Core\Users\Models\User;'];
+                    $to[4] = ['use CurrentTest\Testing\Models\Post;'];
+                }
+
                 $this->create("{$this->testPackage['name']}/{$from[0]} users/{$to[0]}");
 
                 $this->assertCase($from, $to, $models);
@@ -147,8 +152,8 @@ class OneToTest extends TestCase
     private function prepare(array $names = ['', '', ''], array $packages = ['', '', ''], array $keys = ['', '', '']): array
     {
         return [
-            $f = [...$this->names($names[0] ?: 'post'), $keys[0]],
-            $t = [...$this->names($names[1] ?: 'comment'), $keys[1]],
+            $f = [...$this->names($names[0] ?: 'post'), $keys[0], []],
+            $t = [...$this->names($names[1] ?: 'comment'), $keys[1], []],
             $this->setModels([$f[2], $t[2], ''], $packages),
         ];
     }

@@ -11,6 +11,11 @@ use Bakgul\Kernel\Tests\Tasks\SetupTest;
 class ManyToManyTest extends TestCase
 {
     /** @test */
+    public function mm_without_package_without_keys_without_pivot()
+    {
+        //
+    }
+    /** @test */
     public function many_to_many_with_defaults_will_be_added_to_models_and_create_pivot_migration()
     {
         $this->testPackage = (new SetupTest)();

@@ -2,6 +2,7 @@
 
 namespace Bakgul\CodeGenerator\Tests\Assertions;
 
+use Bakgul\CodeGenerator\Tests\Assertions\AssertionHelpers\AppendUses;
 use Bakgul\Kernel\Helpers\Text;
 use Bakgul\Kernel\Tasks\ConvertCase;
 use Illuminate\Support\Arr;
@@ -25,10 +26,12 @@ trait OneToPolymorphicAssertion
 
             $pairs = $this->getPair($models, $model[0]);
 
-            $expectation = [
-                7 => "class {$model[0]} extends Model",
-                11 => $this->setFunction($pairs, $to, $role),
-                13 => $this->codeLine($to, $pairs)
+            $add = count($$role[4]);
+
+            $expectation =  AppendUses::_($$role[4], $add) + [
+                 7 + $add => "class {$model[0]} extends Model",
+                11 + $add => $this->setFunction($pairs, $to, $role),
+                13 + $add => $this->codeLine($to, $pairs)
             ];
 
             $content = file($model[1]);

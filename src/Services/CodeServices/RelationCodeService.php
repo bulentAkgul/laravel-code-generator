@@ -18,25 +18,27 @@ class RelationCodeService extends CodeGenerator
     {
         $request = RelationRequestService::handle($request);
 
-        self::insertMethods($request);
+        self::insertModelCodes($request);
 
         self::insertForeignKeys($request);
 
         self::handleMediator($request);
     }
 
-    private static function insertMethods(array $request)
+    private static function insertModelCodes(array $request)
     {
         foreach (self::sides($request) as $side) {
-            $request = ExtendRequestForSide::method($request, $side);
-
+            $request = ExtendRequestForSide::model($request, $side);
+            
             InsertRelation::_($request, MutateStub::get($request));
+
+            InsertCode::uses($request);
         }
     }
 
-    private static function sides(array $requesrt): array
+    private static function sides(array $request): array
     {
-        return $requesrt['attr']['is_through'] ? ['From'] : ['From', 'To'];
+        return $request['attr']['is_through'] ? ['From'] : ['From', 'To'];
     }
 
     private static function insertForeignKeys(array $request)

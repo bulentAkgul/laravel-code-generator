@@ -5,6 +5,7 @@ namespace Bakgul\CodeGenerator\Tests\Feature;
 use Bakgul\CodeGenerator\Tests\Assertions\OneToPolymorphicAssertion;
 use Bakgul\CodeGenerator\Tests\TestCase;
 use Bakgul\Kernel\Helpers\Convention;
+use Bakgul\Kernel\Helpers\Settings;
 use Bakgul\Kernel\Tests\Services\TestDataService;
 use Bakgul\Kernel\Tests\Tasks\SetupTest;
 use Illuminate\Support\Str;
@@ -78,6 +79,10 @@ class OneToPolymorphicTest extends TestCase
 
                 [$from, $to, $models] = $this->prepare(['', 'user', ''], [$this->testPackage['name'], 'users', '']);
 
+                if ($isAlone == 'pl') {
+                    $from[4] = ['use Core\Users\Models\User;'];
+                }
+                
                 $this->create("{$this->testPackage['name']}/{$from[0]} users/{$to[0]} -p");
 
                 $this->assertCase($from, $to, $models);
@@ -139,6 +144,26 @@ class OneToPolymorphicTest extends TestCase
         }
     }
 
+    /** @test */
+    public function op_with_ignored_mediator()
+    {
+        Settings::set('evaluator.evaluate_commands', false);
+
+        foreach (['oto', 'otm'] as $mode) {
+            $this->mode = $mode;
+
+            foreach (['sl', 'sp', 'pl'] as $isAlone) {
+                $this->setupTest($isAlone);
+
+                [$from, $to, $models] = $this->prepare();
+
+                $this->create("{$from[0]} {$to[0]} 'mediator' -p");
+
+                $this->assertCase($from, $to, $models);
+            }
+        }
+    }
+
     private function setupTest(string $key)
     {
         $this->testPackage = (new SetupTest)(TestDataService::standalone($key));
@@ -147,8 +172,8 @@ class OneToPolymorphicTest extends TestCase
     private function prepare(array $names = ['', '', ''], array $packages = ['', '', ''], array $keys = ['', '', '']): array
     {
         return [
-            $f = [...$this->names($names[0] ?: 'post'), $keys[0]],
-            $t = [...$this->names($names[1] ?: 'comment'), $keys[1]],
+            $f = [...$this->names($names[0] ?: 'post'), $keys[0], []],
+            $t = [...$this->names($names[1] ?: 'comment'), $keys[1], []],
             $this->setModels([$f[2], $t[2], ''], $packages),
         ];
     }

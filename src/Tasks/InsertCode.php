@@ -26,6 +26,14 @@ class InsertCode
         ], 'lines', 'block');
     }
 
+    public static function uses($request)
+    {
+        Register::_($request, [
+            'end' => ['class', 0],
+            'findEndBy' => 'use',
+        ], [], 'imports', 'line');
+    }
+
     private static function defaults()
     {
         return  [
