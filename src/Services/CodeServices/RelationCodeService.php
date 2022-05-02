@@ -29,7 +29,7 @@ class RelationCodeService extends CodeGenerator
     {
         foreach (self::sides($request) as $side) {
             $request = ExtendRequestForSide::model($request, $side);
-            
+
             InsertRelation::_($request, MutateStub::get($request));
 
             InsertCode::uses($request);

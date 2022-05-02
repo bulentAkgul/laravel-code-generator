@@ -4,11 +4,7 @@ namespace Bakgul\CodeGenerator\Tests\Feature;
 
 use Bakgul\CodeGenerator\Tests\Assertions\OneToPolymorphicAssertion;
 use Bakgul\CodeGenerator\Tests\TestCase;
-use Bakgul\Kernel\Helpers\Convention;
 use Bakgul\Kernel\Helpers\Settings;
-use Bakgul\Kernel\Tests\Services\TestDataService;
-use Bakgul\Kernel\Tests\Tasks\SetupTest;
-use Illuminate\Support\Str;
 
 class OneToPolymorphicTest extends TestCase
 {
@@ -164,11 +160,6 @@ class OneToPolymorphicTest extends TestCase
         }
     }
 
-    private function setupTest(string $key)
-    {
-        $this->testPackage = (new SetupTest)(TestDataService::standalone($key));
-    }
-
     private function prepare(array $names = ['', '', ''], array $packages = ['', '', ''], array $keys = ['', '', '']): array
     {
         return [
@@ -176,10 +167,5 @@ class OneToPolymorphicTest extends TestCase
             $t = [...$this->names($names[1] ?: 'comment'), $keys[1], []],
             $this->setModels([$f[2], $t[2], ''], $packages),
         ];
-    }
-
-    private function names($base)
-    {
-        return [$base, Str::plural($base), Convention::class($base)];
     }
 }

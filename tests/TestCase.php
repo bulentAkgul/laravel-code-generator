@@ -3,11 +3,15 @@
 namespace Bakgul\CodeGenerator\Tests;
 
 use Bakgul\Kernel\Helpers\Arry;
+use Bakgul\Kernel\Helpers\Convention;
 use Bakgul\Kernel\Helpers\Path;
 use Bakgul\Kernel\Helpers\Settings;
 use Bakgul\Kernel\Tasks\ConvertCase;
+use Bakgul\Kernel\Tests\Services\TestDataService;
+use Bakgul\Kernel\Tests\Tasks\SetupTest;
 use Bakgul\Kernel\Tests\TestCase as BaseTestCase;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class TestCase extends BaseTestCase
 {
@@ -19,6 +23,16 @@ class TestCase extends BaseTestCase
         $this->artisan("create:relation {$this->mode} {$specs}");
     }
 
+    protected function setupTest(string $key)
+    {
+        $this->testPackage = (new SetupTest)(TestDataService::standalone($key));
+    }
+
+    protected function names($base)
+    {
+        return [$base, Str::plural($base), Convention::class($base)];
+    }
+
     protected function setModels(array $names, array $packages = ['', '', ''])
     {
         config()->set('packagify.file.model.pairs', ['']);
@@ -27,7 +41,7 @@ class TestCase extends BaseTestCase
 
         foreach ($names as $i => $name) {
             if ($name) {
-                $this->createModel($name, $packages[$i]);
+                if (!($this->mode == 'mtm' && $i == 2)) $this->createModel($name, $packages[$i]);
                 $models[self::ROLES[$i]] = [$name, $this->modelPath($name, $packages[$i]), $packages[$i]];
             } else {
                 $models[self::ROLES[$i]] = [];
@@ -50,6 +64,7 @@ class TestCase extends BaseTestCase
         $migrations = [];
 
         foreach ($names as $i => $name) {
+            $name = $name ? ConvertCase::snake($name) : '';
             $migrations[self::ROLES[$i]] = $name ? [$name, $this->migrationPath($name, $packages[$i])] : [];
         }
 

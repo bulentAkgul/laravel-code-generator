@@ -4,12 +4,8 @@ namespace Bakgul\CodeGenerator\Tests\Feature;
 
 use Bakgul\CodeGenerator\Tests\Assertions\HasThroughAssertion;
 use Bakgul\CodeGenerator\Tests\TestCase;
-use Bakgul\Kernel\Helpers\Convention;
 use Bakgul\Kernel\Helpers\Path;
 use Bakgul\Kernel\Helpers\Settings;
-use Bakgul\Kernel\Tests\Services\TestDataService;
-use Bakgul\Kernel\Tests\Tasks\SetupTest;
-use Illuminate\Support\Str;
 
 class HasThroughTest extends TestCase
 {
@@ -148,12 +144,10 @@ class HasThroughTest extends TestCase
     /** @test */
     public function ht_with_from_package_with_different_to_package_with_different_mediator_package_without_keys()
     {
-        foreach (['oto'] as $mode) {
-        // foreach (['oto', 'otm'] as $mode) {
+        foreach (['oto', 'otm'] as $mode) {
             $this->mode = $mode;
 
-            foreach (['pl'] as $isAlone) {
-            // foreach (['sl', 'sp', 'pl'] as $isAlone) {
+            foreach (['sl', 'sp', 'pl'] as $isAlone) {
                 $this->setupTest($isAlone);
 
                 if ($isAlone == 'pl') mkdir(Path::glue([base_path(), Settings::main('packages_root'), 'core', 'new-users']));
@@ -243,11 +237,6 @@ class HasThroughTest extends TestCase
         }
     }
 
-    private function setupTest(string $key)
-    {
-        $this->testPackage = (new SetupTest)(TestDataService::standalone($key));
-    }
-
     private function prepare(array $names = ['', '', ''], array $packages = ['', '', ''], array $keys = ['', '', '']): array
     {
         return [
@@ -256,10 +245,5 @@ class HasThroughTest extends TestCase
             $m = [...$this->names($names[2] ?: 'image'), $keys[2], []],
             $this->setModels([$f[2], $t[2], $m[2]], $packages),
         ];
-    }
-
-    private function names($base)
-    {
-        return [$base, Str::plural($base), Convention::class($base)];
     }
 }

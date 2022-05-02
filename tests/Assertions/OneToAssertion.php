@@ -2,7 +2,7 @@
 
 namespace Bakgul\CodeGenerator\Tests\Assertions;
 
-use Bakgul\CodeGenerator\Tests\Assertions\AssertionHelpers\AppendUses;
+use Bakgul\CodeGenerator\Tests\Functions\AppendUses;
 use Bakgul\Kernel\Helpers\Text;
 use Bakgul\Kernel\Tasks\ConvertCase;
 use Illuminate\Support\Arr;

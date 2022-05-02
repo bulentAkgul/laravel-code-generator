@@ -3,14 +3,13 @@
 namespace Bakgul\CodeGenerator\Tests\Assertions;
 
 use Bakgul\CodeGenerator\Tests\Functions\AppendUses;
+use Bakgul\Kernel\Helpers\Arry;
 use Bakgul\Kernel\Helpers\Text;
 use Bakgul\Kernel\Tasks\ConvertCase;
 use Illuminate\Support\Arr;
 
-trait HasThroughAssertion
+trait ManyToManyAssertion
 {
-    public $methods = ['oto' => 'hasOneThrough', 'otm' => 'hasManyThrough'];
-
     public function assertCase($from, $to, $mediator, $models)
     {
         $this->assertModels($from, $to, $mediator, $models);
@@ -19,9 +18,8 @@ trait HasThroughAssertion
 
     private function assertModels($from, $to, $mediator, $models)
     {
-
         foreach ($models as $role => $model) {
-            if (!$model) continue;
+            if (!$model[0]) continue;
 
             $this->assertFileExists($model[1]);
 
@@ -56,13 +54,9 @@ trait HasThroughAssertion
 
     private function codeLine($from, $to, $mediator, $pairs)
     {
-        $method = $pairs[0] == $to[2] ? $this->methods[$this->mode] : 'belongsTo';
-
         return implode('', [
-            'return $this->',
-            $method,
-            '(',
-            "{$pairs[0]}::class, {$pairs[1]}::class",
+            'return $this->belongsToMany(',
+            "{$pairs[0]}::class",
             $this->addKeys($from, $to, $mediator, $pairs),
             ');'
         ]);
@@ -79,18 +73,17 @@ trait HasThroughAssertion
     private function assertMigrations($from, $to, $mediator, $models)
     {
         $migrations = $this->migrations(
-            [$from[1], $to[1], ''],
+            [$from[1], $to[1], $mediator[0]],
             array_map(fn ($x) => $x ?? '', Arr::pluck($models, 2))
         );
 
         foreach ($migrations as $role => $migration) {
-            if (!$migration) continue;
-
             $this->assertFileExists($migration[1]);
 
             $expectation = [
                 10 => 'Schema::create(' . Text::inject($migration[0], "'") . ', function (Blueprint $table) {',
-                13 => $this->migrationLine($role, $to, $mediator)
+                13 => $this->migrationLine($role, $from, $to, $mediator, 'from'),
+                14 => $this->migrationLine($role, $from, $to, $mediator, 'to'),
             ];
 
             $content = file($migration[1]);
@@ -101,18 +94,12 @@ trait HasThroughAssertion
         }
     }
 
-    private function migrationLine($role, $to, $mediator)
+    private function migrationLine($role, $from, $to, $mediator, $owner)
     {
-        if ($role == 'from') return '});';
+        if ($role != 'mediator') return $owner == 'from' ? '});' : '}';
 
-        $key = Text::inject(
-            $role == 'to'
-                ? ($to[3] ?: "{$mediator[0]}_id")
-                : ($mediator[3] ?: "{$to[0]}_id"),
-            "'"
-        );
-        
-        $table = Text::inject($role == 'to' ? $mediator[1] : $to[1], "'");
+        $key = Text::inject($$owner[3] ?: "{$$owner[0]}_id", "'");
+        $table = Text::inject($$owner[1], "'");
 
         return '$table->foreignId(' . $key . ')->constrained(' . $table . ');';
     }

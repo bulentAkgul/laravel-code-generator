@@ -1,6 +1,6 @@
 <?php
 
-namespace Bakgul\CodeGenerator\Tests\Assertions\AssertionHelpers;
+namespace Bakgul\CodeGenerator\Tests\Functions;
 
 class AppendUses
 {

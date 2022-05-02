@@ -2,6 +2,7 @@
 
 namespace Bakgul\CodeGenerator\Tasks;
 
+use Bakgul\CodeGenerator\Functions\HasMediatorModel;
 use Bakgul\Kernel\Functions\CreateFileRequest;
 use Bakgul\Kernel\Tasks\SimulateArtisanCall;
 use Bakgul\Kernel\Helpers\Arry;
@@ -18,18 +19,16 @@ class HandlePivot
     {
         if (!class_exists('\Bakgul\FileCreator\FileCreatorServiceProvider')) return;
 
-        $request['attr']['mediator']
-            ? self::withModel($request)
-            : self::withoutModel($request['attr']);
+        self::createModel($request);
 
-        self::addColumns($request);
+        self::createMigration($request);
     }
 
-    private static function withModel($request)
+    private static function createModel(array $request)
     {
-        if (self::modelExists($request['attr'])) return self::withoutModel($request['attr']);
-
-        Settings::set('files.migration.name_count', 'X');
+        if (self::isNotModelable($request['attr']) || self::modelExists($request['attr'])) return;
+        
+        self::dropMigration();
 
         (new SimulateArtisanCall)(CreateFileRequest::_([
             'name' => $request['attr']['mediator'],
@@ -38,6 +37,11 @@ class HandlePivot
         ]));
 
         self::addTable($request);
+    }
+
+    private static function isNotModelable(array $attr): bool
+    {
+        return !HasMediatorModel::_($attr);
     }
 
     private static function modelExists(array $attr)
@@ -49,6 +53,11 @@ class HandlePivot
         ]));
     }
 
+    private static function dropMigration()
+    {
+        Settings::set('files.model.pairs', Settings::files('model.pairs', fn ($x) => $x != 'migration'));
+    }
+
     private static function addTable(array $request)
     {
         $request['attr']['target_file'] = self::getModel($request);
@@ -58,16 +67,18 @@ class HandlePivot
         InsertCode::table($request);
     }
 
-    private static function withoutModel($attr)
+    private static function createMigration(array $request)
     {
         Settings::set('files.migration.pairs', ['']);
         Settings::set('files.migration.name_count', 'X');
 
         (new SimulateArtisanCall)(CreateFileRequest::_([
-            'name' => $attr['mediator_table'],
+            'name' => $request['attr']['mediator_table'],
             'type' => 'migration',
-            'package' => $attr['mediator_package'],
+            'package' => $request['attr']['mediator_package'],
         ]));
+
+        self::addColumns($request);
     }
 
     private static function addColumns($request)
@@ -109,11 +120,11 @@ class HandlePivot
 
     private static function setLine(array $request, string $key): string
     {
-        return '$table->foreignId("'
-            . self::key($request, $key)
-            . '")->constrained('
+        return '$table->foreignId('
+            . Text::inject(self::key($request, $key), "'")
+            . ')->constrained('
             . Text::inject($request['map'][Str::plural($key)], "'")
-            . ');';
+            . ')';
     }
 
     private static function key(array $request, string $key)

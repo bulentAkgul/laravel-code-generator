@@ -1,4 +1,4 @@
 public function {{ tos }}()
 {
-    return $this->belongsToMany({{ To }}::class{{ mediator_table }}{{ from_key }}{{ to_key }}){{ mediator_code }};
+    return $this->belongsToMany({{ To }}::class{{ mediator_table }}{{ mediator_keys }}){{ mediator_code }};
 }
