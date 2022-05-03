@@ -2,8 +2,8 @@
 
 namespace Bakgul\CodeGenerator\Tasks;
 
+use Bakgul\Kernel\Helpers\Convention;
 use Bakgul\Kernel\Helpers\Text;
-use Bakgul\Kernel\Tasks\ConvertCase;
 
 class MakeMigrationLine
 {
@@ -11,14 +11,17 @@ class MakeMigrationLine
     {
         return '$table->foreignId('
             . Text::inject(self::key($request, $key), "'")
-            . ')'
-            . '->constrained('
+            . ')->constrained('
             . Text::inject(self::table($request, $key), "'")
             . ')';
     }
 
     private static function key(array $request, string $key): string
     {
+        if ($request['attr']['relation'] == 'mtm') {
+            return $request['attr']["{$key}_key"] ?: "{$request['map'][$key]}_id";
+        }
+
         if ($key == 'mediator') return "{$request['map']['from']}_id";
 
         return $request['map']['to_key']
@@ -31,10 +34,14 @@ class MakeMigrationLine
 
     private static function table(array $request, string $key): string
     {
-        return ConvertCase::snake(
-            $key == 'mediator' || ($key == 'to' && !$request['attr']['is_through'])
-                ? $request['map']['froms']
-                : $request['map']['mediators']
+        if ($request['attr']['relation'] == 'mtm') return Convention::table($request['map'][$key]);
+
+        return Convention::table(
+            $request['attr']['relation'] == 'mtm'
+                ? $request['map'][$key]
+                : ($key == 'mediator' || ($key == 'to' && !$request['attr']['is_through'])
+                    ? $request['map']['from']
+                    : $request['map']['mediator'])
         );
     }
 }

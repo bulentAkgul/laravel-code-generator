@@ -32,8 +32,8 @@ trait HasThroughAssertion
             $expectation = AppendUses::_($$role[4], $add) + [
                 7 + $add => "class {$model[0]} extends Model"
             ] + ($role == 'from' ? [
-                11 + $add => $this->setFunction($pairs, $role),
-                13 + $add => $this->codeLine($from, $to, $mediator, $pairs)
+                11 + $add => $this->setFunctionDeclaration($pairs, $role),
+                13 + $add => $this->setCodeLine($from, $to, $mediator, $pairs)
             ] : []);
 
             $content = file($model[1]);
@@ -44,7 +44,7 @@ trait HasThroughAssertion
         }
     }
 
-    private function setFunction(array $pairs, string $role): string
+    private function setFunctionDeclaration(array $pairs, string $role): string
     {
         if ($role != 'from') return '';
 
@@ -54,7 +54,7 @@ trait HasThroughAssertion
         ) . '()';
     }
 
-    private function codeLine($from, $to, $mediator, $pairs)
+    private function setCodeLine($from, $to, $mediator, $pairs)
     {
         $method = $pairs[0] == $to[2] ? $this->methods[$this->mode] : 'belongsTo';
 

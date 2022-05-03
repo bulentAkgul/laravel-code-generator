@@ -30,8 +30,8 @@ trait OneToAssertion
 
             $expectation = AppendUses::_($$role[4], $add) + [
                  7 + $add => "class {$model[0]} extends Model",
-                11 + $add => $this->setFunction($pairs, $role),
-                13 + $add => $this->codeLine($from, $to, $pairs)
+                11 + $add => $this->setFunctionDeclaration($pairs, $role),
+                13 + $add => $this->setCodeLine($from, $to, $pairs)
             ];
 
             $content = file($model[1]);
@@ -42,12 +42,12 @@ trait OneToAssertion
         }
     }
 
-    private function setFunction(array $pairs, string $role): string
+    private function setFunctionDeclaration(array $pairs, string $role): string
     {
         return 'public function ' . ConvertCase::camel($pairs[0], $this->mode == 'oto' ?: $role == 'to') . '()';
     }
 
-    private function codeLine($from, $to, $pairs)
+    private function setCodeLine($from, $to, $pairs)
     {
         $method = $pairs[0] == $to[2] ? $this->methods[$this->mode] : 'belongsTo';
 

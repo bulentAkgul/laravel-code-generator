@@ -115,20 +115,7 @@ class HandlePivot
 
     private static function setForeingKeys(array $request): array
     {
-        return array_map(fn ($x) => self::setLine($request, $x), ['from', 'to']);
-    }
-
-    private static function setLine(array $request, string $key): string
-    {
-        return '$table->foreignId('
-            . Text::inject(self::key($request, $key), "'")
-            . ')->constrained('
-            . Text::inject($request['map'][Str::plural($key)], "'")
-            . ')';
-    }
-
-    private static function key(array $request, string $key)
-    {
-        return $request['attr']['from_key'] ?: "{$request['map'][$key]}_id";
+        return array_map(fn ($x) => MakeMigrationLine::_($request, $x), ['from', 'to']);
+        // return array_map(fn ($x) => self::setLine($request, $x), ['from', 'to']);
     }
 }

@@ -17,6 +17,14 @@ class TestCase extends BaseTestCase
 {
     const ROLES = ['from', 'to', 'mediator'];
     protected $mode;
+    protected $scenario;
+
+    protected function init(string $mode = '', string $scenario = '')
+    {
+        $this->mode = $mode ?: Arry::random(['oto', 'otm'])[0];
+        $this->scenario = $scenario ?: Arry::random(['sl', 'sp', 'pl'])[0];
+        $this->setupTest($this->scenario);
+    }
 
     protected function create(string $specs)
     {

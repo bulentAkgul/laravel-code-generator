@@ -8,7 +8,7 @@ use Bakgul\Kernel\Helpers\Text;
 use Bakgul\Kernel\Tasks\ConvertCase;
 use Illuminate\Support\Arr;
 
-trait ManyToManyAssertion
+trait ManyToAssertion
 {
     public function assertCase($from, $to, $mediator, $models)
     {
@@ -26,12 +26,13 @@ trait ManyToManyAssertion
             $pairs = $this->getPair($models, $model[0]);
             
             $add = count($$role[4]);
+            $remove = $role == 'mediator' ? 1 : 0;
 
             $expectation = AppendUses::_($$role[4], $add) + [
-                7 + $add => "class {$model[0]} extends Model"
+                7 + $add - $remove => "class {$model[0]} extends " . ($role == 'mediator' ? 'Pivot' : 'Model')
             ] + ($role == 'from' ? [
-                11 + $add => $this->setFunction($pairs, $role),
-                13 + $add => $this->codeLine($from, $to, $mediator, $pairs)
+                11 + $add - $remove => $this->setFunctionDeclaration($pairs, $role),
+                13 + $add - $remove => $this->setCodeLine($from, $to, $mediator, $models, $pairs, $role)
             ] : []);
 
             $content = file($model[1]);
@@ -42,38 +43,55 @@ trait ManyToManyAssertion
         }
     }
 
-    private function setFunction(array $pairs, string $role): string
+    private function setFunctionDeclaration(array $pairs, string $role): string
     {
-        if ($role != 'from') return '';
+        if ($role == 'mediator') return '';
 
-        return 'public function ' . ConvertCase::camel(
-            $this->mode == 'oto' ? "{$pairs[1]}-{$pairs[0]}" : $pairs[0],
-            $this->mode == 'oto'
-        ) . '()';
+        return 'public function ' . ConvertCase::camel($pairs[0], false) . '()';
     }
 
-    private function codeLine($from, $to, $mediator, $pairs)
+    private function setCodeLine($from, $to, $mediator, $models, $pairs, $role)
     {
         return implode('', [
             'return $this->belongsToMany(',
             "{$pairs[0]}::class",
-            $this->addKeys($from, $to, $mediator, $pairs),
-            ');'
+            $this->addKeys($from, $to, $mediator, $pairs, $role),
+            ')',
+            $this->addUsing($models['mediator']),
+            ';'
         ]);
     }
 
-    private function addKeys($from, $to, $mediator, $pairs)
+    private function addKeys($from, $to, $mediator, $pairs, $role)
     {
+        $pair = Arry::find([$from, $to], $pairs[0])['value'];
+
+        $keys = [$pair[3], $$role[3]];
+
+        if (!array_filter($keys)) {
+            return !$pairs[1] && $mediator[0] != $mediator[5]
+                ? Text::append(Text::inject(ConvertCase::snake($mediator[5]), "'"), ', ')
+                : '';
+        }
+
+        $keys[0] = $keys[0] ?: "{$pair[0]}_id";
+        $keys[1] = $keys[1] ?: "{$$role[3]}_id";
+
         return Text::append(implode(', ', array_map(
             fn ($x) => Text::inject($x, "'"),
-            array_filter([$mediator[3] ?: ($to[3] ? "{$from[0]}_id" : ''), $to[3]])
+            [ConvertCase::snake($mediator[5] ?: $mediator[0]), ...$keys]
         )), ', ');
+    }
+
+    private function addUsing($mediator)
+    {
+        return $mediator[0] ? '->using(' . $mediator[0] . '::class)' : '';
     }
 
     private function assertMigrations($from, $to, $mediator, $models)
     {
         $migrations = $this->migrations(
-            [$from[1], $to[1], $mediator[0]],
+            [$from[1], $to[1], $mediator[5] ?: $mediator[0]],
             array_map(fn ($x) => $x ?? '', Arr::pluck($models, 2))
         );
 

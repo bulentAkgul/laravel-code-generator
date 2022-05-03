@@ -2,10 +2,12 @@
 
 namespace Bakgul\CodeGenerator\Tasks;
 
+use Bakgul\CodeGenerator\Functions\HasMediatorModel;
 use Bakgul\Kernel\Helpers\Package;
 use Bakgul\Kernel\Helpers\Path;
 use Bakgul\Kernel\Helpers\Settings;
 use Bakgul\Kernel\Helpers\Text;
+use Bakgul\Kernel\Tasks\ConvertCase;
 use Bakgul\Kernel\Tasks\GenerateNamespace;
 use Illuminate\Support\Str;
 
@@ -21,6 +23,7 @@ class ExtendRequestForSide
             'map' => array_merge($request['map'], [
                 'to_key' => self::setToKey($request),
                 'imports' => self::setImports($request, $side),
+                ...SetMediatorMap::_($request['attr'], $side)
             ])
         ];
     }

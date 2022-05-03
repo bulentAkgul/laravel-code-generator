@@ -67,14 +67,16 @@ class SetMediatorAttr
 
     private static function setPivotTable(array $attr): string
     {
-        return self::hasDefaultPivot($attr['mediator'])
+        return self::hasDefaultPivot($attr)
             ? self::makePivotName($attr)
             : Isolation::name($attr['mediator']);
     }
 
-    private static function hasDefaultPivot(?string $pivot): bool
+    private static function hasDefaultPivot(array $attr): bool
     {
-        return !$pivot || in_array($pivot, ['t', 'y', 'true', 'yes']);
+        return !$attr['mediator']
+            || in_array($attr['mediator'], ['t', 'y', 'true', 'yes'])
+            || ($attr['relation'] == 'mtm' && $attr['polymorphic']);
     }
 
     private static function makePivotName(array $attr): string

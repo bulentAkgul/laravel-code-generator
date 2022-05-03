@@ -30,8 +30,8 @@ trait OneToPolymorphicAssertion
 
             $expectation =  AppendUses::_($$role[4], $add) + [
                  7 + $add => "class {$model[0]} extends Model",
-                11 + $add => $this->setFunction($pairs, $to, $role),
-                13 + $add => $this->codeLine($to, $pairs)
+                11 + $add => $this->setFunctionDeclaration($pairs, $to, $role),
+                13 + $add => $this->setCodeLine($to, $pairs)
             ];
 
             $content = file($model[1]);
@@ -42,12 +42,12 @@ trait OneToPolymorphicAssertion
         }
     }
 
-    private function setFunction(array $pairs, array $to, string $role): string
+    private function setFunctionDeclaration(array $pairs, array $to, string $role): string
     {
         return 'public function ' . ($role == 'to' ? "{$to[0]}able" : ConvertCase::camel($pairs[0], $this->mode == 'oto')) . '()';
     }
 
-    private function codeLine($to, $pairs)
+    private function setCodeLine($to, $pairs)
     {
         $method = $pairs[0] == $to[2] ? $this->methods[$this->mode] : 'morphTo';
 
