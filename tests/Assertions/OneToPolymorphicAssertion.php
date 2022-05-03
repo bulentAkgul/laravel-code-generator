@@ -75,9 +75,9 @@ trait OneToPolymorphicAssertion
             $this->assertFileExists($migration[1]);
 
             $expectation = [
-                10 => 'Schema::create(' . Text::inject($migration[0], "'") . ', function (Blueprint $table) {',
-                13 => $role == 'to' ? '$table->integer(' . Text::inject("{$to[0]}able_id", "'") . ');' : '});',
-                14 => $role == 'to' ? '$table->string(' . Text::inject("{$to[0]}able_type", "'") . ');' : '}',
+                10 => 'Schema::create(' . Text::wrap($migration[0], 'sq') . ', function (Blueprint $table) {',
+                13 => $role == 'to' ? '$table->integer' . Text::inject("{$to[0]}able_id", ['(', 'sq']) . ';' : '});',
+                14 => $role == 'to' ? '$table->string' . Text::inject("{$to[0]}able_type", ['(', 'sq']) . ';' : '}',
             ];
 
             $content = file($migration[1]);

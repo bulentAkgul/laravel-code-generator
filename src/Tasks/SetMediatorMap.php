@@ -36,7 +36,7 @@ class SetMediatorMap
         $keys[1] = $keys[0] && !$keys[1] ? "{$attr[$order[1]]}_id" : $keys[1];
 
         return Text::append(implode(', ', array_map(
-            fn ($x) => Text::inject($x, "'"),
+            fn ($x) => Text::wrap($x, 'sq'),
             array_filter($keys)
         )), ', ');
     }
@@ -48,7 +48,7 @@ class SetMediatorMap
         return !HasMediatorModel::_($attr)
             && $attr['mediator_table'] != $attr['default_pivot_table']
             || $keys
-            ? ', ' . Text::inject(ConvertCase::snake($attr['mediator_table']), "'")
+            ? ', ' . Text::wrap(ConvertCase::snake($attr['mediator_table']), 'sq')
             : '';
     }
 
@@ -59,7 +59,10 @@ class SetMediatorMap
 
     private static function setKey(array $attr): string
     {
-        return Text::append(Text::inject($attr['mediator_key'] ?: ($attr['to_key'] ? ConvertCase::snake($attr['from']) . '_id' : ''
-        ), "'"), ', ');
+        return Text::append(
+            Text::wrap($attr['mediator_key'] ?: (
+                $attr['to_key'] ? ConvertCase::snake($attr['from']) . '_id' : ''
+            ), 'sq'),
+            ', ');
     }
 }

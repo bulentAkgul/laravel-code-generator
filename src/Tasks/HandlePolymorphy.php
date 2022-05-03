@@ -9,8 +9,8 @@ class HandlePolymorphy
     public static function _(array $request, bool $earlyReturn = false)
     {
         $request['map']['lines'] = [
-            '$table->integer(' . Text::inject("{$request['map']['able']}_id", "'") . ')',
-            '$table->string(' . Text::inject("{$request['map']['able']}_type", "'") . ')',
+            '$table->integer' . Text::inject("{$request['map']['able']}_id", ['(', 'sq']),
+            '$table->string' . Text::inject("{$request['map']['able']}_type", ['(', 'sq']),
         ];
 
         if ($earlyReturn) return $request['map']['lines'];

@@ -65,7 +65,7 @@ class ManyToPolymorphicTest extends TestCase
     /** @test */
     public function mp_without_pivot_without_model_with_keys_without_package()
     {
-        // Settings::set('evaluator.evaluate_commands', false);
+        Settings::set('evaluator.evaluate_commands', false);
 
         $this->init('mtm');
 

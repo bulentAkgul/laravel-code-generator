@@ -29,7 +29,7 @@ trait OneToAssertion
             $add = count($$role[4]);
 
             $expectation = AppendUses::_($$role[4], $add) + [
-                 7 + $add => "class {$model[0]} extends Model",
+                7 + $add => "class {$model[0]} extends Model",
                 11 + $add => $this->setFunctionDeclaration($pairs, $role),
                 13 + $add => $this->setCodeLine($from, $to, $pairs)
             ];
@@ -79,8 +79,12 @@ trait OneToAssertion
             $this->assertFileExists($migration[1]);
 
             $expectation = [
-                10 => 'Schema::create(' . Text::inject($migration[0], "'") . ', function (Blueprint $table) {',
-                13 => $role == 'to' ? '$table->foreignId(' . Text::inject($to[3] ?: "{$from[0]}_id", "'") . ')->constrained(' . Text::inject($from[1], "'") . ');' : '});'
+                10 => 'Schema::create(' . Text::wrap($migration[0], 'sq') . ', function (Blueprint $table) {',
+                13 => $role == 'to'
+                    ? '$table->foreignId'
+                    . Text::inject($to[3] ?: "{$from[0]}_id", ['(', 'sq'])
+                    . '->constrained' . Text::inject($from[1], ['(', 'sq']) . ';'
+                    : '});'
             ];
 
             $content = file($migration[1]);

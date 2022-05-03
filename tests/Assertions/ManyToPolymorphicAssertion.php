@@ -55,7 +55,7 @@ trait ManyToPolymorphicAssertion
         return implode('', [
             'return $this->',
             ['from' => 'morphToMany', 'to' => 'morphedByMany'][$role],
-            Text::inject("{$pairs[0]}::class, '{$mediator[0]}'", ['(']),
+            Text::wrap("{$pairs[0]}::class, '{$mediator[0]}'", '('),
             ';'
         ]);
     }
@@ -68,7 +68,7 @@ trait ManyToPolymorphicAssertion
 
         if (!array_filter($keys)) {
             return !$pairs[1] && $mediator[0] != $mediator[5]
-                ? Text::append(Text::inject(ConvertCase::snake($mediator[5]), "'"), ', ')
+                ? Text::append(Text::wrap(ConvertCase::snake($mediator[5]), 'sq'), ', ')
                 : '';
         }
 
@@ -76,7 +76,7 @@ trait ManyToPolymorphicAssertion
         $keys[1] = $keys[1] ?: "{$$role[3]}_id";
 
         return Text::append(implode(', ', array_map(
-            fn ($x) => Text::inject($x, "'"),
+            fn ($x) => Text::wrap($x, 'sq'),
             [ConvertCase::snake($mediator[5] ?: $mediator[0]), ...$keys]
         )), ', ');
     }
@@ -97,7 +97,7 @@ trait ManyToPolymorphicAssertion
             $this->assertFileExists($migration[1]);
 
             $expectation = [
-                10 => 'Schema::create(' . Text::inject($migration[0], "'") . ', function (Blueprint $table) {',
+                10 => 'Schema::create(' . Text::wrap($migration[0], 'sq') . ', function (Blueprint $table) {',
                 13 => $this->migrationLine($role, $mediator, 'integer'),
                 14 => $this->migrationLine($role, $mediator, 'string'),
             ];
@@ -119,7 +119,7 @@ trait ManyToPolymorphicAssertion
         return implode('', [
             '$table->',
             $type,
-            Text::inject("'{$mediator[0]}{$suffix}'", ['(']),
+            Text::wrap("'{$mediator[0]}{$suffix}'", '('),
             ';'
         ]);
     }

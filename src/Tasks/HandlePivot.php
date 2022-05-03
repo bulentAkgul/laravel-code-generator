@@ -62,7 +62,7 @@ class HandlePivot
     {
         $request['attr']['target_file'] = self::getModel($request);
 
-        $request['map']['lines'] = 'protected $table = ' . Text::inject($request['attr']['mediator_table'], "'");
+        $request['map']['lines'] = 'protected $table = ' . Text::wrap($request['attr']['mediator_table'], 'sq');
 
         InsertCode::table($request);
     }

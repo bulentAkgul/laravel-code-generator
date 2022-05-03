@@ -118,7 +118,7 @@ class RelationRequestService extends CodeGenerator
 
     private static function setKey(string $key)
     {
-        return $key ? ', ' . Text::inject(ConvertCase::snake($key), "'") : '';
+        return $key ? ', ' . Text::wrap(ConvertCase::snake($key), 'sq') : '';
     }
 
     private static function extend(array $request)

@@ -36,7 +36,7 @@ class ExtendRequestForSide
 
         $key = $request['map']['from_key'] ? "{$request['map']['from']}_id" : '';
 
-        return Text::append(Text::inject($key, "'"), ', ');
+        return Text::append(Text::wrap($key, 'sq'), ', ');
     }
 
     private static function setImports(array $request, string $side): string

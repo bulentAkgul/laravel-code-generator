@@ -9,11 +9,10 @@ class MakeMigrationLine
 {
     public static function _(array $request, string $key): string
     {
-        return '$table->foreignId('
-            . Text::inject(self::key($request, $key), "'")
-            . ')->constrained('
-            . Text::inject(self::table($request, $key), "'")
-            . ')';
+        return '$table->foreignId'
+            . Text::inject(self::key($request, $key), ['(', 'sq'])
+            . '->constrained'
+            . Text::inject(self::table($request, $key), ['(', 'sq']);
     }
 
     private static function key(array $request, string $key): string

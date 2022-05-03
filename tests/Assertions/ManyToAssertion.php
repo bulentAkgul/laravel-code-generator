@@ -70,7 +70,7 @@ trait ManyToAssertion
 
         if (!array_filter($keys)) {
             return !$pairs[1] && $mediator[0] != $mediator[5]
-                ? Text::append(Text::inject(ConvertCase::snake($mediator[5]), "'"), ', ')
+                ? Text::append(Text::wrap(ConvertCase::snake($mediator[5]), 'sq'), ', ')
                 : '';
         }
 
@@ -78,7 +78,7 @@ trait ManyToAssertion
         $keys[1] = $keys[1] ?: ($$role[3] ? "{$$role[3]}_id" : "{$$role[0]}_id");
 
         return Text::append(implode(', ', array_map(
-            fn ($x) => Text::inject($x, "'"),
+            fn ($x) => Text::wrap($x, 'sq'),
             [ConvertCase::snake($mediator[5] ?: $mediator[0]), ...$keys]
         )), ', ');
     }
@@ -99,7 +99,7 @@ trait ManyToAssertion
             $this->assertFileExists($migration[1]);
 
             $expectation = [
-                10 => 'Schema::create(' . Text::inject($migration[0], "'") . ', function (Blueprint $table) {',
+                10 => 'Schema::create(' . Text::wrap($migration[0], 'sq') . ', function (Blueprint $table) {',
                 13 => $this->migrationLine($role, $from, $to, $mediator, 'from'),
                 14 => $this->migrationLine($role, $from, $to, $mediator, 'to'),
             ];
@@ -116,9 +116,9 @@ trait ManyToAssertion
     {
         if ($role != 'mediator') return $owner == 'from' ? '});' : '}';
 
-        $key = Text::inject($$owner[3] ?: "{$$owner[0]}_id", "'");
-        $table = Text::inject($$owner[1], "'");
+        $key = Text::inject($$owner[3] ?: "{$$owner[0]}_id", ['(', 'sq']);
+        $table = Text::inject($$owner[1], ['(', 'sq']);
 
-        return '$table->foreignId(' . $key . ')->constrained(' . $table . ');';
+        return '$table->foreignId' . $key . '->constrained' . $table . ';';
     }
 }

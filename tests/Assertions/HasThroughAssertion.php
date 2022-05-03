@@ -26,7 +26,7 @@ trait HasThroughAssertion
             $this->assertFileExists($model[1]);
 
             $pairs = $this->getPair($models, $model[0]);
-            
+
             $add = count($$role[4]);
 
             $expectation = AppendUses::_($$role[4], $add) + [
@@ -71,7 +71,7 @@ trait HasThroughAssertion
     private function addKeys($from, $to, $mediator, $pairs)
     {
         return Text::append(implode(', ', array_map(
-            fn ($x) => Text::inject($x, "'"),
+            fn ($x) => Text::wrap($x, 'sq'),
             array_filter([$mediator[3] ?: ($to[3] ? "{$from[0]}_id" : ''), $to[3]])
         )), ', ');
     }
@@ -89,7 +89,7 @@ trait HasThroughAssertion
             $this->assertFileExists($migration[1]);
 
             $expectation = [
-                10 => 'Schema::create(' . Text::inject($migration[0], "'") . ', function (Blueprint $table) {',
+                10 => 'Schema::create(' . Text::wrap($migration[0], 'sq') . ', function (Blueprint $table) {',
                 13 => $this->migrationLine($role, $to, $mediator)
             ];
 
@@ -109,11 +109,11 @@ trait HasThroughAssertion
             $role == 'to'
                 ? ($to[3] ?: "{$mediator[0]}_id")
                 : ($mediator[3] ?: "{$to[0]}_id"),
-            "'"
+            ['(', 'sq']
         );
-        
-        $table = Text::inject($role == 'to' ? $mediator[1] : $to[1], "'");
 
-        return '$table->foreignId(' . $key . ')->constrained(' . $table . ');';
+        $table = Text::inject($role == 'to' ? $mediator[1] : $to[1], ['(', 'sq']);
+
+        return '$table->foreignId' . $key . '->constrained' . $table . ';';
     }
 }
