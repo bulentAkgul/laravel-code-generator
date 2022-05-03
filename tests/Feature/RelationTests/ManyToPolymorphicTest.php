@@ -62,6 +62,20 @@ class ManyToPolymorphicTest extends TestCase
         $this->assertCase($from, $to, $mediator, $this->deleteMediator($models));
     }
 
+    /** @test */
+    public function mp_without_pivot_without_model_with_keys_without_package()
+    {
+        // Settings::set('evaluator.evaluate_commands', false);
+
+        $this->init('mtm');
+
+        [$from, $to, $mediator, $models] = $this->prepare(keys: ['from_id', 'to_id', '']);
+
+        $this->create("{$from[0]}:from_id {$to[0]}:to_id -p");
+
+        $this->assertCase($from, $to, $mediator, $this->deleteMediator($models));
+    }
+
     private function prepare(
         array $names = ['', '', ''],
         array $packages = ['', '', ''],

@@ -83,6 +83,30 @@ class ManyToTest extends TestCase
         $this->assertCase($from, $to, $mediator, $models);
     }
 
+    /** @test */
+    public function mm_with_pivot_with_different_model_with_from_key_wit_to_key_without_package()
+    {
+        $this->init('mtm');
+
+        [$from, $to, $mediator, $models] = $this->prepare(['', '', 'image-files'], keys: ['from_id', 'to_id', ''], migration: 'images');
+
+        $this->create("{$from[0]}:from_id {$to[0]}:to_id images:image-files");
+
+        $this->assertCase($from, $to, $mediator, $models);
+    }
+
+    /** @test */
+    public function mm_with_pivot_with_different_model_without_from_key_with_to_key_without_package()
+    {
+        $this->init('mtm');
+
+        [$from, $to, $mediator, $models] = $this->prepare(['', '', 'image-files'], keys: ['', 'custom_id', ''], migration: 'images');
+
+        $this->create("{$from[0]} {$to[0]}:custom_id images:image-files");
+
+        $this->assertCase($from, $to, $mediator, $models);
+    }
+
     private function prepare(
         array $names = ['', '', ''],
         array $packages = ['', '', ''],
