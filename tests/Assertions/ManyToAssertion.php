@@ -75,7 +75,7 @@ trait ManyToAssertion
         }
 
         $keys[0] = $keys[0] ?: "{$pair[0]}_id";
-        $keys[1] = $keys[1] ?: "{$$role[3]}_id";
+        $keys[1] = $keys[1] ?: ($$role[3] ? "{$$role[3]}_id" : "{$$role[0]}_id");
 
         return Text::append(implode(', ', array_map(
             fn ($x) => Text::inject($x, "'"),
