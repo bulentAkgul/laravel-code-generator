@@ -4,7 +4,6 @@ namespace Bakgul\CodeGenerator\Tasks;
 
 use Bakgul\Kernel\Functions\CreateFileRequest;
 use Bakgul\Kernel\Tasks\SimulateArtisanCall;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Str;
 
 class HandleThrough
