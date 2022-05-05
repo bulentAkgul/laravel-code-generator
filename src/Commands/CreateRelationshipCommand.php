@@ -8,12 +8,13 @@ use Bakgul\Kernel\Concerns\HasRequest;
 use Bakgul\Kernel\Concerns\Sharable;
 use Bakgul\Evaluator\Concerns\ShouldBeEvaluated;
 use Bakgul\Evaluator\Services\RelationCommandEvaluationService;
+use Bakgul\FileHistory\Concerns\HasHistory;
 use Bakgul\Kernel\Helpers\Settings;
 use Illuminate\Console\Command;
 
 class CreateRelationshipCommand extends Command
 {
-    use HasPreparation, HasRequest, Sharable, ShouldBeEvaluated;
+    use HasHistory, HasPreparation, HasRequest, Sharable, ShouldBeEvaluated;
 
     protected $signature = '
         create:relation
@@ -69,6 +70,8 @@ class CreateRelationshipCommand extends Command
             $this->evaluate();
             if ($this->stop()) return $this->terminate();
         }
+
+        $this->logFile();
 
         RelationCodeService::create($this->request);
     }
