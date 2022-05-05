@@ -43,7 +43,7 @@ class TestCase extends BaseTestCase
 
     protected function setModels(array $names, array $packages = ['', '', ''])
     {
-        config()->set('packagify.file.model.pairs', ['']);
+        Settings::set('file.model.pairs', ['']);
 
         $models = [];
 
