@@ -104,7 +104,7 @@ class HasThroughTest extends TestCase
     {
         $this->init();
         
-        if ($this->scenario == 'pl') mkdir(Path::glue([base_path(), Settings::main('packages_root'), 'core', 'new-users']));
+        if ($this->scenario == 'pl') mkdir(Path::glue([base_path(), Settings::folders('packages'), 'core', 'new-users']));
 
         [$from, $to, $mediator, $models] = $this->prepare(['', 'user', ''], [$this->testPackage['name'], 'users', 'new-users']);
 

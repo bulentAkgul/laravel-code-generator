@@ -35,7 +35,7 @@ class FindMigration
         $key = $key == 'able' ? ($attr['is_mtm'] ? 'mediator' : 'to') : $key;
 
         return array_filter([
-            Settings::main('packages_root'),
+            Settings::folders('packages'),
             Package::root($attr["{$key}_package"]),
             $attr["{$key}_package"]
         ]);

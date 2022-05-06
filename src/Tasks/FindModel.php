@@ -11,7 +11,7 @@ class FindModel
 {
     public static function _($name)
     {
-        $model = self::getModel($name, [Settings::main('packages_root')]);
+        $model = self::getModel($name, [Settings::folders('packages')]);
 
         if ($model) return $model;
         
