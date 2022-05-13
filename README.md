@@ -26,6 +26,11 @@ In the future release, **one of many** will also be covered.
 ```
 sail artisan create:relation {relation} {from} {to} {mediator?} {--m|model} {--p|polymorphic}
 ```
+## Schemas
++ **from**: package/table:column:model
++ **to**:   package/table:column:model
++ **mediator (as through)**: package/table:column:model
++ **mediator (as pivot)**: package/table:model
 ### Expected Inputs
 + **Relation**: One of the shorthands of the type of the eloquent relations:
   + **oto** : One to One
@@ -33,11 +38,10 @@ sail artisan create:relation {relation} {from} {to} {mediator?} {--m|model} {--p
   + **mtm** : Many to Many
 + **Model**: While generating a many-to-many relationship, a model for pivot table will be created if " **-m** " or " **--model** " is added to the command.
 + **Polymorphic**: When the command has  " **-p** " or " **--polymorphic** the relation will be converted to polymorhic of the specified type in the argument named "relation."
-### Schemas and Scenarios
-On the following list of arguments, you can find how to pass them.
+### Schemas and Details of From, To, and Mediator
 + **From**: This is the "***has***" part of the relationship.
   + **Schema**: package/table:column:model
-  + **Scenarios**:
+  + **Details**:
     + **package**: It's optional.
       + *exists*: Model is searched in the specified package.
       + *missing*: All possible model containers are checked to find the model.
@@ -50,7 +54,7 @@ On the following list of arguments, you can find how to pass them.
       + *missing*: 
 + **To**: This is the "***belongsTo***" part of the relationship.
   + **Schema**: package/table:column:model
-  + **Scenarios**:
+  + **Details**:
     + **package**: It's optional.
       + *exists*: Model is searched in the specified package.
       + *missing*: All possible model's containers are checked to find the model.
@@ -60,7 +64,7 @@ On the following list of arguments, you can find how to pass them.
       + *missing*: By default it's generated based on the model name of the "From" or "Mediator" (if relationship is "through"). For example, if the model is User, then the column will be "user_id"
 + **Mediator (as through)**: This is the middleman of the "Has One Through" and "Has Many Through" relationships. So the mediator becomes a middleman when the relation is *oto* or *otm*.
   + **Schema**: package/model:column
-  + **Scenarios**:
+  + **Details**:
     + **package**: It's optional.
       + *exists*: Model is searched in the specified package. If it can't be found, it will be created there.
       + *missing*: All possible model's containers are checked to find the model. If it can't be found, it will be created in the same namespace as **From**
@@ -70,7 +74,7 @@ On the following list of arguments, you can find how to pass them.
       + *missing*: By default it's generated based on the model name of the "From." For example, if the model is UserDetails, then the column will be "user_detail_id"
 + **Mediator (as pivot)**: When the relationship is "Many to Many" the mediator becomes the pivot. It's optional. When it doen't exist, Laravel conventions will be followed. In other words, if From is "comments", and To is "posts", the migration will be comment_post.
   + **Schema**: package/table:model
-  + **Scenarios**:
+  + **Details**:
     + **package**: It's optional.
       + *exists*: Model is searched in the specified package. If it can't be found, it will be created there.
       + *missing*: All possible model's containers are checked to find the model. If it can't be found, it will be created in the same namespace as **From**
