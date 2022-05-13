@@ -55,4 +55,13 @@ class OneToDefaultTest extends TestCase
     {
         $this->runOneTo(keys: ['from', 'to', '']);
     }
+
+    /** @test */
+    public function ot_without_package_without_keys_with_model()
+    {
+        $this->runOneTo(['users', '', ''], ['users', '', ''], models: ['vip-user', '', ''], uses: [
+            'from' => ['use CurrentTest\Testing\Models\Comment;'],
+            'to' => ['use Core\Users\Models\VipUser;'],
+        ]);
+    }
 }
