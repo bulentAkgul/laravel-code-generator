@@ -2,6 +2,7 @@
 
 namespace Bakgul\CodeGenerator\Tests\Assertions;
 
+use Bakgul\CodeGenerator\Tests\Concerns\AssertionMethods;
 use Bakgul\CodeGenerator\Tests\Functions\AppendUses;
 use Bakgul\Kernel\Helpers\Arry;
 use Bakgul\Kernel\Helpers\Text;
@@ -10,6 +11,8 @@ use Illuminate\Support\Arr;
 
 trait ManyToAssertion
 {
+    use AssertionMethods;
+    
     public function assertCase($from, $to, $mediator, $models)
     {
         $this->assertModels($from, $to, $mediator, $models);
@@ -19,26 +22,26 @@ trait ManyToAssertion
     private function assertModels($from, $to, $mediator, $models)
     {
         foreach ($models as $role => $model) {
-            if (!$model[0]) continue;
+            if (!$model['path']) continue;
 
-            $this->assertFileExists($model[1]);
+            $this->assertFileExists($model['path']);
 
-            $pairs = $this->getPair($models, $model[0]);
-            
-            $add = count($$role[4]);
+            $pairs = $this->getPair($models, $model['name']);
+
+            $add = count($$role['uses']);
             $remove = $role == 'mediator' ? 1 : 0;
 
-            $expectation = AppendUses::_($$role[4], $add) + [
-                7 + $add - $remove => "class {$model[0]} extends " . ($role == 'mediator' ? 'Pivot' : 'Model')
+            $expectation = AppendUses::_($$role['uses'], $add) + [
+                7 + $add - $remove => "class {$model['name']} extends " . ($role == 'mediator' ? 'Pivot' : 'Model')
             ] + ($role == 'from' ? [
                 11 + $add - $remove => $this->setFunctionDeclaration($pairs, $role),
                 13 + $add - $remove => $this->setCodeLine($from, $to, $mediator, $models, $pairs, $role)
             ] : []);
 
-            $content = file($model[1]);
+            $content = file($model['path']);
 
             foreach ($expectation as $i => $line) {
-                $this->assertEquals($line, trim($content[$i]));
+                $this->assertEquals($line, trim($content[$i]), "{$i} {$model['path']}");
             }
         }
     }
@@ -52,73 +55,101 @@ trait ManyToAssertion
 
     private function setCodeLine($from, $to, $mediator, $models, $pairs, $role)
     {
+        $using = $this->addUsing($models['mediator']);
+
         return implode('', [
             'return $this->belongsToMany(',
             "{$pairs[0]}::class",
-            $this->addKeys($from, $to, $mediator, $pairs, $role),
-            ')',
-            $this->addUsing($models['mediator']),
-            ';'
+            $this->addKeys($from, $to, $mediator, $pairs, $role, $using),
+            "){$using};",
         ]);
     }
 
-    private function addKeys($from, $to, $mediator, $pairs, $role)
+    private function addKeys($from, $to, $mediator, $pairs, $role, $using)
     {
-        $pair = Arry::find([$from, $to], $pairs[0])['value'];
+        $pair = Arry::find([$from, $to], $pairs[0], 'model')['value'];
 
-        $keys = [$pair[3], $$role[3]];
+        $keys = $this->makeKeys([$pair['key'], $$role['key']], $role == 'from' ? $from : $to, $pair, $mediator);
 
-        if (!array_filter($keys)) {
-            return !$pairs[1] && $mediator[0] != $mediator[5]
-                ? Text::append(Text::wrap(ConvertCase::snake($mediator[5]), 'sq'), ', ')
-                : '';
-        }
+        $keys = count($keys) == 1 && $using ? [] : array_map(fn ($x) => Text::wrap($x, 'sq'), $keys);
 
-        $keys[0] = $keys[0] ?: "{$pair[0]}_id";
-        $keys[1] = $keys[1] ?: ($$role[3] ? "{$$role[3]}_id" : "{$$role[0]}_id");
+        return Text::append(implode(', ', $keys), ', ');
+    }
 
-        return Text::append(implode(', ', array_map(
-            fn ($x) => Text::wrap($x, 'sq'),
-            [ConvertCase::snake($mediator[5] ?: $mediator[0]), ...$keys]
-        )), ', ');
+    private function areKeysId($keys)
+    {
+        return !array_filter($keys, fn ($x) => $x != 'id');
+    }
+
+    private function isNotDefaultTable($from, $to, $default)
+    {
+        return $this->defaultPivotName($from, $to) != $default;
+    }
+
+    private function defaultPivotName($from, $to)
+    {
+        return  implode('_', array_map(
+            fn ($x) => ConvertCase::snake($x, true),
+            Arry::sort(Arr::pluck([$from, $to], 'singular'))
+        ));
+    }
+
+
+    private function makeKeys($keys, $side, $pair, $mediator)
+    {
+        $output[2] = $keys[0] != 'id' ? "{$pair['singular']}_{$keys[0]}" : '';
+        $output[1] = $keys[1] != 'id' || $output[2] ?  "{$side['singular']}_{$keys[1]}" : '';
+        $output[0] = $this->isNotDefaultTable($side, $pair, $mediator['passed']) || $output[1] ? $mediator['passed'] : '';
+
+        return array_filter(array_reverse($output));
+    }
+
+    private function setKeys($table, $isDefault, $keys)
+    {
+        return array_filter([
+            $isDefault && !array_filter($keys) ? '' : $table,
+            ...$keys
+        ]);
     }
 
     private function addUsing($mediator)
     {
-        return $mediator[0] ? '->using(' . $mediator[0] . '::class)' : '';
+        return $mediator['name'] ? '->using(' . $mediator['name'] . '::class)' : '';
     }
 
     private function assertMigrations($from, $to, $mediator, $models)
     {
-        $migrations = $this->migrations(
-            [$from[1], $to[1], $mediator[5] ?: $mediator[0]],
-            array_map(fn ($x) => $x ?? '', Arr::pluck($models, 2))
+        $migrations = $this->setMigrations(
+            [$from['passed'], $to['passed'], $mediator['passed']],
+            array_map(fn ($x) => $x ?? '', Arr::pluck($models, 'package'))
         );
 
         foreach ($migrations as $role => $migration) {
-            $this->assertFileExists($migration[1]);
+            $this->assertFileExists($migration['path']);
 
             $expectation = [
-                10 => 'Schema::create(' . Text::wrap($migration[0], 'sq') . ', function (Blueprint $table) {',
-                13 => $this->migrationLine($role, $from, $to, $mediator, 'from'),
-                14 => $this->migrationLine($role, $from, $to, $mediator, 'to'),
+                10 => 'Schema::create(' . Text::wrap($migration['name'], 'sq') . ', function (Blueprint $table) {',
+                13 => $this->migrationLine($role, $from, $to, true),
+                14 => $this->migrationLine($role, $from, $to, false),
             ];
 
-            $content = file($migration[1]);
+            $content = file($migration['path']);
 
             foreach ($expectation as $i => $line) {
-                $this->assertEquals($line, trim($content[$i]));
+                $this->assertEquals($line, trim($content[$i]), "{$role} {$i} {$migration['path']}");
             }
         }
     }
 
-    private function migrationLine($role, $from, $to, $mediator, $owner)
+    private function migrationLine($role, $from, $to, $isFirstLine)
     {
-        if ($role != 'mediator') return $owner == 'from' ? '});' : '}';
+        if ($role == 'mediator') {
+            $side = $isFirstLine ? $from : $to;
+            return $this->makeLocalKey("{$side['singular']}_{$side['key']}");
+        }
 
-        $key = Text::inject($$owner[3] ?: "{$$owner[0]}_id", ['(', 'sq']);
-        $table = Text::inject($$owner[1], ['(', 'sq']);
-
-        return '$table->foreignId' . $key . '->constrained' . $table . ';';
+        return $isFirstLine
+            ? ($$role['key'] == 'id' ? $this->close() : $this->makeLocalKey($$role['key']))
+            : ($$role['key'] == 'id' ? '}' : $this->close());
     }
 }

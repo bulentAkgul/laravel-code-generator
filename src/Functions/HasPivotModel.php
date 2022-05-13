@@ -4,7 +4,7 @@ namespace Bakgul\CodeGenerator\Functions;
 
 use Bakgul\Kernel\Tasks\ConvertCase;
 
-class HasMediatorModel
+class HasPivotModel
 {
     public static function _(array $attr): bool
     {

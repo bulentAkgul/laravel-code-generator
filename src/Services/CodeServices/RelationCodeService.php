@@ -14,21 +14,30 @@ use Bakgul\Kernel\Tasks\MutateStub;
 
 class RelationCodeService extends CodeGenerator
 {
+    private static $request;
+
     public static function create($request)
     {
-        $request = RelationRequestService::handle($request);
+        self::makeRequest($request);
 
-        self::insertModelCodes($request);
+        self::insertModelCodes();
 
-        self::insertForeignKeys($request);
+        self::insertMigrationLines();
 
-        self::handleMediator($request);
+        self::handleMediator();
     }
 
-    private static function insertModelCodes(array $request)
+    private static function makeRequest($request)
     {
-        foreach (self::sides($request) as $side) {
-            $request = ExtendRequestForSide::model($request, $side);
+        self::$request = RelationRequestService::handle($request);
+    }
+
+    private static function insertModelCodes()
+    {
+        foreach (['From', 'To'] as $side) {
+            if (self::hasModelNoCode($side)) continue;
+
+            $request = ExtendRequestForSide::model(self::$request, $side);
 
             InsertRelation::_($request, MutateStub::get($request));
 
@@ -36,30 +45,27 @@ class RelationCodeService extends CodeGenerator
         }
     }
 
-    private static function sides(array $request): array
+    private static function insertMigrationLines()
     {
-        return $request['attr']['is_through'] ? ['From'] : ['From', 'To'];
+        foreach (['from', 'to'] as $side) {
+            $request = ExtendRequestForSide::migration(self::$request, $side);
+
+            if (array_filter($request['map']['lines'])) InsertCode::key($request);
+        }
     }
 
-    private static function insertForeignKeys(array $request)
-    {
-        if (self::hasNotForeignKey($request['attr'])) return;
-
-        InsertCode::key(ExtendRequestForSide::foreignKey($request, 'to'));
-    }
-
-    private static function hasNotForeignKey(array $attr): bool
-    {
-        return $attr['is_mtm'] || $attr['is_through'] || $attr['polymorphic'];
-    }
-
-    private static function handleMediator(array $request)
+    private static function handleMediator()
     {
         match (true) {
-            $request['attr']['is_mtm'] => HandlePivot::_($request),
-            $request['attr']['is_through'] => HandleThrough::_($request),
-            $request['attr']['polymorphic'] => HandlePolymorphy::_($request),
+            self::$request['attr']['is_mtm'] => HandlePivot::_(self::$request),
+            self::$request['attr']['is_through'] => HandleThrough::_(self::$request),
+            self::$request['attr']['polymorphic'] => HandlePolymorphy::_(self::$request),
             default => null
         };
+    }
+
+    private static function hasModelNoCode($side)
+    {
+        return in_array($side, ['to', 'To']) && self::$request['attr']['is_through'];
     }
 }

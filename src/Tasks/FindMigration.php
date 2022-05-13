@@ -6,57 +6,35 @@ use Bakgul\Kernel\Helpers\Arry;
 use Bakgul\Kernel\Helpers\Folder;
 use Bakgul\Kernel\Helpers\Package;
 use Bakgul\Kernel\Helpers\Path;
-use Bakgul\Kernel\Helpers\Settings;
 
 class FindMigration
 {
-    public static function _(array $request, array $keys = ['to', 'tos'])
+    public static function _(array $request, string $key)
     {
-        $names = self::setNames($request['map'], $keys);
+        $table = $request['attr']["{$key}_table"];
 
-        $migration = self::getMigration($names, self::setTail($request['attr'], $keys[0]));
+        foreach (self::folders($request['attr'], $key) as $folder) {
+            $migration = array_filter(
+                Folder::files($folder),
+                fn ($x) => str_contains($x, "create_{$table}_table")
+            );
 
-        if ($migration) return $migration;
-
-        $migration = self::getMigration($names, ['database', 'migrations']);
-
-        if ($migration) return $migration;
-
-        return '';
-    }
-
-    private static function setNames(array $map, array $keys): array
-    {
-        return array_map(fn ($x) => "create_{$map[$x]}_table.php",  $keys);
-    }
-
-    private static function setTail(array $attr, string $key)
-    {
-        $key = $key == 'able' ? ($attr['is_mtm'] ? 'mediator' : 'to') : $key;
-
-        return array_filter([
-            Settings::folders('packages'),
-            Package::root($attr["{$key}_package"]),
-            $attr["{$key}_package"]
-        ]);
-    }
-
-    private static function getMigration(array $names, array $folders): string
-    {
-        foreach ($names as $name) {
-            $path = Arry::get(array_filter(
-                Folder::files(self::path($folders)),
-                fn ($x) => str_contains($x, $name)
-            ), 0);
-
-            if ($path) return $path;
+            if (array_filter($migration)) return Arry::get($migration, 0);
         }
 
         return '';
     }
 
-    private static function path(array $folders): string
+    private static function folders(array $attr, string $key)
     {
-        return Path::glue([base_path(), ...$folders]);
+        return array_filter([
+            self::package($attr["{$key}_package"]),
+            database_path('migrations')
+        ]);
+    }
+
+    private static function package(string $package): string
+    {
+        return $package ? Package::path($package, Path::glue(['database', 'migrations'])) : '';
     }
 }

@@ -12,30 +12,42 @@ trait ManyToPolymorphicAssertion
 {
     public function assertCase($from, $to, $mediator, $models)
     {
+        $mediator = $this->mediator($to['singular']);
+
         $this->assertModels($from, $to, $mediator, $models);
         $this->assertMigrations($from, $to, $mediator, $models);
+    }
+
+    private function mediator($base)
+    {
+        return [
+            'passed' => "{$base}ables",
+            'singular' => "{$base}able",
+        ];
     }
 
     private function assertModels($from, $to, $mediator, $models)
     {
         foreach ($models as $role => $model) {
-            if (!$model[0]) continue;
+            if (!$model['path']) continue;
 
-            $this->assertFileExists($model[1]);
+            $this->assertFileExists($model['path']);
 
-            $pairs = $this->getPair($models, $model[0]);
+            $pairs = $this->getPair($models, $model['name']);
+
+            $side = $role == 'from' ? $from : $to;
             
-            $add = count($$role[4]);
+            $add = count($side['uses']);
             $remove = $role == 'mediator' ? 1 : 0;
 
-            $expectation = AppendUses::_($$role[4], $add) + [
-                7 + $add - $remove => "class {$model[0]} extends " . ($role == 'mediator' ? 'Pivot' : 'Model')
+            $expectation = AppendUses::_($side['uses'], $add) + [
+                7 + $add - $remove => "class {$model['name']} extends " . ($role == 'mediator' ? 'Pivot' : 'Model')
             ] + ($role == 'from' ? [
                 11 + $add - $remove => $this->setFunctionDeclaration($pairs, $role),
                 13 + $add - $remove => $this->setCodeLine($mediator, $pairs, $role)
             ] : []);
 
-            $content = file($model[1]);
+            $content = file($model['path']);
 
             foreach ($expectation as $i => $line) {
                 $this->assertEquals($line, trim($content[$i]));
@@ -45,9 +57,9 @@ trait ManyToPolymorphicAssertion
 
     private function setFunctionDeclaration(array $pairs, string $role): string
     {
-        if ($role == 'mediator') return '';
-
-        return 'public function ' . ConvertCase::camel($pairs[0], false) . '()';
+        return $role != 'mediator'
+            ? 'public function ' . ConvertCase::camel($pairs[0], false) . '()'
+            : '';
     }
 
     private function setCodeLine($mediator, $pairs, $role)
@@ -55,54 +67,33 @@ trait ManyToPolymorphicAssertion
         return implode('', [
             'return $this->',
             ['from' => 'morphToMany', 'to' => 'morphedByMany'][$role],
-            Text::wrap("{$pairs[0]}::class, '{$mediator[0]}'", '('),
+            Text::wrap("{$pairs[0]}::class, '{$mediator['singular']}'", '('),
             ';'
         ]);
     }
 
-    private function addKeys($from, $to, $mediator, $pairs, $role)
+    private function addUsing($model)
     {
-        $pair = Arry::find([$from, $to], $pairs[0])['value'];
-
-        $keys = [$pair[3], $$role[3]];
-
-        if (!array_filter($keys)) {
-            return !$pairs[1] && $mediator[0] != $mediator[5]
-                ? Text::append(Text::wrap(ConvertCase::snake($mediator[5]), 'sq'), ', ')
-                : '';
-        }
-
-        $keys[0] = $keys[0] ?: "{$pair[0]}_id";
-        $keys[1] = $keys[1] ?: "{$$role[3]}_id";
-
-        return Text::append(implode(', ', array_map(
-            fn ($x) => Text::wrap($x, 'sq'),
-            [ConvertCase::snake($mediator[5] ?: $mediator[0]), ...$keys]
-        )), ', ');
-    }
-
-    private function addUsing($mediator)
-    {
-        return $mediator[0] ? '->using(' . $mediator[0] . '::class)' : '';
+        return $model['name'] ? '->using(' . $model['name'] . '::class)' : '';
     }
 
     private function assertMigrations($from, $to, $mediator, $models)
     {
-        $migrations = $this->migrations(
-            [$from[1], $to[1], $mediator[5] ?: $mediator[1]],
-            array_map(fn ($x) => $x ?? '', Arr::pluck($models, 2))
+        $migrations = $this->setMigrations(
+            [$from['passed'], $to['passed'], $mediator['passed']],
+            array_map(fn ($x) => $x ?? '', Arr::pluck($models, 'package'))
         );
 
         foreach ($migrations as $role => $migration) {
-            $this->assertFileExists($migration[1]);
+            $this->assertFileExists($migration['path']);
 
             $expectation = [
-                10 => 'Schema::create(' . Text::wrap($migration[0], 'sq') . ', function (Blueprint $table) {',
+                10 => 'Schema::create(' . Text::wrap($migration['name'], 'sq') . ', function (Blueprint $table) {',
                 13 => $this->migrationLine($role, $mediator, 'integer'),
                 14 => $this->migrationLine($role, $mediator, 'string'),
             ];
 
-            $content = file($migration[1]);
+            $content = file($migration['path']);
 
             foreach ($expectation as $i => $line) {
                 $this->assertEquals($line, trim($content[$i]));
@@ -119,7 +110,7 @@ trait ManyToPolymorphicAssertion
         return implode('', [
             '$table->',
             $type,
-            Text::wrap("'{$mediator[0]}{$suffix}'", '('),
+            Text::wrap("'{$mediator['singular']}{$suffix}'", '('),
             ';'
         ]);
     }

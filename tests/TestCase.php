@@ -11,7 +11,6 @@ use Bakgul\Kernel\Tests\Services\TestDataService;
 use Bakgul\Kernel\Tests\Tasks\SetupTest;
 use Bakgul\Kernel\Tests\TestCase as BaseTestCase;
 use Carbon\Carbon;
-use Illuminate\Support\Str;
 
 class TestCase extends BaseTestCase
 {
@@ -36,9 +35,14 @@ class TestCase extends BaseTestCase
         $this->testPackage = (new SetupTest)(TestDataService::standalone($key));
     }
 
-    protected function names($base)
+    protected function names($base, $model = '')
     {
-        return [$base, Str::plural($base), Convention::class($base)];
+        return [
+            'passed' => $this->snake($base, null),
+            'singular' => $this->snake($base, true),
+            'plural' => $this->snake($base, false),
+            'model' => Convention::class($model ?: $base)
+        ];
     }
 
     protected function setModels(array $names, array $packages = ['', '', ''])
@@ -48,12 +52,13 @@ class TestCase extends BaseTestCase
         $models = [];
 
         foreach ($names as $i => $name) {
-            if ($name) {
-                if (!($this->mode == 'mtm' && $i == 2)) $this->createModel($name, $packages[$i]);
-                $models[self::ROLES[$i]] = [$name, $this->modelPath($name, $packages[$i]), $packages[$i]];
-            } else {
-                $models[self::ROLES[$i]] = [];
-            }
+            if ($i != 2) $this->createModel($name, $packages[$i]);
+
+            $models[self::ROLES[$i]] = [
+                'name' => $n = Convention::class($name),
+                'package' => $this->setPackage($packages[$i]),
+                'path' => $this->modelPath($n, $packages[$i]),
+            ];
         }
 
         return $models;
@@ -67,13 +72,21 @@ class TestCase extends BaseTestCase
         ])));
     }
 
-    protected function migrations(array $names, array $packages = ['', '', ''])
+    private function setPackage($package)
+    {
+        return $package ?: (!Settings::standalone() ? $this->testPackage['name'] : '');
+    }
+
+    protected function setMigrations(array $names, array $packages = ['', '', ''])
     {
         $migrations = [];
 
         foreach ($names as $i => $name) {
-            $name = $name ? ConvertCase::snake($name) : '';
-            $migrations[self::ROLES[$i]] = $name ? [$name, $this->migrationPath($name, $packages[$i])] : [];
+            $migrations[self::ROLES[$i]] = [
+                'name' => $name,
+                'path' => $this->migrationPath($name, $packages[$i]),
+                'package' => $this->setPackage($packages[$i])
+            ];
         }
 
         return $migrations;
@@ -89,12 +102,22 @@ class TestCase extends BaseTestCase
 
     private function modelPath(string $name, string $package)
     {
-        return Path::glue([
+        return $this->existingPath(Path::glue([
             $package ? Path::package($package) : $this->testPackage['path'],
             Settings::standalone('laravel') ? 'app' : 'src',
             'Models',
             "{$name}.php"
-        ]);
+        ]));
+    }
+
+    private function migrationPath(string $name, string $package)
+    {
+        return $this->existingPath(Path::glue([
+            $package ? Path::package($package) : $this->testPackage['path'],
+            'database',
+            'migrations',
+            self::migration($name)
+        ]));
     }
 
     protected function migration(string $name)
@@ -102,14 +125,9 @@ class TestCase extends BaseTestCase
         return Carbon::today()->format('Y_m_d') . "_000000_create_{$name}_table.php";
     }
 
-    private function migrationPath(string $name, string $package)
+    private function existingPath($path)
     {
-        return Path::glue([
-            $package ? Path::package($package) : $this->testPackage['path'],
-            'database',
-            'migrations',
-            self::migration($name)
-        ]);
+        return file_exists($path) ? $path : '';
     }
 
     protected function database($folder)
@@ -119,6 +137,11 @@ class TestCase extends BaseTestCase
 
     protected function defaultPivot(array $models): string
     {
-        return implode('_', Arry::sort(array_map(fn ($x) => ConvertCase::snake($x, true), array_keys($models))));
+        return implode('_', Arry::sort(array_map(fn ($x) => $this->snake($x), array_keys($models))));
+    }
+
+    protected function snake($value, $isSingular = true)
+    {
+        return ConvertCase::snake($value, $isSingular);
     }
 }

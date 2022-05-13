@@ -19,9 +19,9 @@ class CreateRelationshipCommand extends Command
     protected $signature = '
         create:relation
         {relation}
-        {from : package/model:column}
-        {to : package/model:column}
-        {mediator? : package/table:model || package/model:column}
+        {from : package/table:column:model}
+        {to : package/table:column:model}
+        {mediator? : package/table:model || package/table:column:model}
         {--m|model}
         {--p|polymorphic}
     ';

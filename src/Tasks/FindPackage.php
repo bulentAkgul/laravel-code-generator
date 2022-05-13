@@ -22,6 +22,6 @@ class FindPackage
 
     private static function package(array $model): string
     {
-        return $model[array_search(Settings::folders('packages'), $model) + 2];
+        return array_filter($model) ? $model[array_search(Settings::folders('packages'), $model) + 2] : '';
     }
 }

@@ -2,14 +2,11 @@
 
 namespace Bakgul\CodeGenerator\Tasks;
 
-use Bakgul\CodeGenerator\Functions\HasMediatorModel;
+use Bakgul\Kernel\Helpers\Arry;
 use Bakgul\Kernel\Helpers\Package;
 use Bakgul\Kernel\Helpers\Path;
 use Bakgul\Kernel\Helpers\Settings;
-use Bakgul\Kernel\Helpers\Text;
-use Bakgul\Kernel\Tasks\ConvertCase;
 use Bakgul\Kernel\Tasks\GenerateNamespace;
-use Illuminate\Support\Str;
 
 class ExtendRequestForSide
 {
@@ -21,22 +18,10 @@ class ExtendRequestForSide
                 'target_file' => self::setTargetModel($request, $side)
             ]),
             'map' => array_merge($request['map'], [
-                'to_key' => self::setToKey($request),
                 'imports' => self::setImports($request, $side),
-                ...SetMediatorMap::_($request['attr'], $side)
+                ...ExtendMediatorMap::_($request['attr'], $side)
             ])
         ];
-    }
-
-    private static function setToKey(array $request): string
-    {
-        if ($request['map']['to_key']) return $request['map']['to_key'];
-
-        if ($request['attr']['is_through']) return '';
-
-        $key = $request['map']['from_key'] ? "{$request['map']['from']}_id" : '';
-
-        return Text::append(Text::wrap($key, 'sq'), ', ');
     }
 
     private static function setImports(array $request, string $side): string
@@ -52,7 +37,7 @@ class ExtendRequestForSide
             ? self::fromUses($request)
             : self::toUses($request);
 
-        return array_filter(self::addMediator($request, $uses, $side));
+            return array_filter(self::addMediator($request, $uses, $side));
     }
 
     private static function fromUses(array $request): array
@@ -62,7 +47,8 @@ class ExtendRequestForSide
 
     private static function isSameNamespace($request, $sides = ['from', 'to']): bool
     {
-        return $request['attr']["{$sides[0]}_package"] == $request['attr']["{$sides[1]}_package"];
+        return Arry::get($request['attr'], "{$sides[0]}_package")
+            == Arry::get($request['attr'], "{$sides[1]}_package");
     }
 
     private static function toUses(array $request): array
@@ -74,7 +60,7 @@ class ExtendRequestForSide
 
     private static function addMediator(array $request, array $uses, string $side): array
     {
-        if (self::isSameNamespace($request, [strtolower($side), 'mediator'])) return $uses;
+        if (self::isMediatorModelNotUsed($request, $side)) return $uses;
 
         if (
             $request['attr']['relation'] == 'mtm'
@@ -84,6 +70,12 @@ class ExtendRequestForSide
         }
 
         return $uses;
+    }
+
+    private static function isMediatorModelNotUsed($request, $side)
+    {
+        return !$request['attr']['has_mediator']
+            || self::isSameNamespace($request, [strtolower($side), 'mediator']);
     }
 
     private static function namespace(array $request, string $side): string
@@ -96,11 +88,11 @@ class ExtendRequestForSide
         ], ['Models', $request['map'][ucfirst($side)]]);
     }
 
-    public static function foreignKey(array $request, string $side): array
+    public static function migration(array $request, string $side): array
     {
         return [
             'attr' => array_merge($request['attr'], [
-                'target_file' => self::setTargetMigration($request, $side)
+                'target_file' => FindMigration::_($request, $side)
             ]),
             'map' => array_merge($request['map'], [
                 'lines' => self::setLine($request, $side)
@@ -127,17 +119,11 @@ class ExtendRequestForSide
         ]);
 
         if (file_exists($path)) return $path;
-
         return FindModel::_($request['map'][$side]);
-    }
-
-    private static function setTargetMigration(array $request, string $side): string
-    {
-        return FindMigration::_($request, [$side, Str::plural($side)]);
     }
 
     private static function setLine(array $request, string $side): array
     {
-        return (array) MakeMigrationLine::_($request, $side);
+        return (array) SetMigrationLine::_($request, $side);
     }
 }

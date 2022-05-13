@@ -4,7 +4,6 @@ namespace Bakgul\CodeGenerator\Tasks;
 
 use Bakgul\Kernel\Functions\CreateFileRequest;
 use Bakgul\Kernel\Tasks\SimulateArtisanCall;
-use Illuminate\Support\Str;
 
 class HandleThrough
 {
@@ -12,7 +11,7 @@ class HandleThrough
     {
         self::createMediators($request['attr']);
 
-        self::addColumns($request);
+        self::addMigrationLines($request);
     }
 
     private static function createMediators(array $attr)
@@ -24,19 +23,14 @@ class HandleThrough
         ]));
     }
 
-    private static function addColumns(array $request)
+    private static function addMigrationLines(array $request)
     {
-        array_map(fn ($x) => self::addColumn($request, $x), ['mediator', 'to']);
-    }
-
-    private static function addColumn(array $request, string $key)
-    {
-        $request['attr']['target_file'] = FindMigration::_($request, [$key, Str::plural($key)]);
+        $request['attr']['target_file'] = FindMigration::_($request, 'mediator');
 
         if (!$request['attr']['target_file']) return;
 
-        $request['map']['lines'] = MakeMigrationLine::_($request, $key);
+        $request['map']['lines'] = SetMigrationLine::_($request, 'mediator');
 
-        InsertCode::key($request);
+        if ($request['map']['lines']) InsertCode::key($request);
     }
 }

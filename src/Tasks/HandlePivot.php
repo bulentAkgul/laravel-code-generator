@@ -2,7 +2,7 @@
 
 namespace Bakgul\CodeGenerator\Tasks;
 
-use Bakgul\CodeGenerator\Functions\HasMediatorModel;
+use Bakgul\CodeGenerator\Functions\HasPivotModel;
 use Bakgul\Kernel\Functions\CreateFileRequest;
 use Bakgul\Kernel\Tasks\SimulateArtisanCall;
 use Bakgul\Kernel\Helpers\Arry;
@@ -11,7 +11,6 @@ use Bakgul\Kernel\Helpers\Folder;
 use Bakgul\Kernel\Helpers\Path;
 use Bakgul\Kernel\Helpers\Settings;
 use Bakgul\Kernel\Helpers\Text;
-use Illuminate\Support\Str;
 
 class HandlePivot
 {
@@ -31,7 +30,7 @@ class HandlePivot
         self::dropMigration();
 
         (new SimulateArtisanCall)(CreateFileRequest::_([
-            'name' => $request['attr']['mediator'],
+            'name' => $request['attr']['mediator_model'],
             'type' => 'model:pivot',
             'package' => $request['attr']['mediator_package'],
         ]));
@@ -41,7 +40,7 @@ class HandlePivot
 
     private static function isNotModelable(array $attr): bool
     {
-        return !HasMediatorModel::_($attr);
+        return !HasPivotModel::_($attr);
     }
 
     private static function modelExists(array $attr)
@@ -49,7 +48,7 @@ class HandlePivot
         return file_exists(Path::glue([
             Path::head($attr['mediator_package'], 'src'),
             'Models',
-            Convention::class($attr['mediator']) . '.php'
+            Convention::class($attr['mediator_model']) . '.php'
         ]));
     }
 
@@ -113,9 +112,8 @@ class HandlePivot
             : self::setForeingKeys($request);
     }
 
-    private static function setForeingKeys(array $request): array
+    private static function setForeingKeys(array $request): string
     {
-        return array_map(fn ($x) => MakeMigrationLine::_($request, $x), ['from', 'to']);
-        // return array_map(fn ($x) => self::setLine($request, $x), ['from', 'to']);
+        return SetMigrationLine::_($request, 'mediator');
     }
 }

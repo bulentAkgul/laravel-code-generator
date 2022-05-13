@@ -20,21 +20,21 @@ trait OneToPolymorphicAssertion
     private function assertModels($from, $to, $models)
     {
         foreach ($models as $role => $model) {
-            if (!$model) continue;
+            if (!$model['path']) continue;
 
-            $this->assertFileExists($model[1]);
+            $this->assertFileExists($model['path']);
 
-            $pairs = $this->getPair($models, $model[0]);
+            $pairs = $this->getPair($models, $model['name']);
 
-            $add = count($$role[4]);
+            $add = count($$role['uses']);
 
-            $expectation =  AppendUses::_($$role[4], $add) + [
-                 7 + $add => "class {$model[0]} extends Model",
+            $expectation =  AppendUses::_($$role['uses'], $add) + [
+                 7 + $add => "class {$model['name']} extends Model",
                 11 + $add => $this->setFunctionDeclaration($pairs, $to, $role),
                 13 + $add => $this->setCodeLine($to, $pairs)
             ];
 
-            $content = file($model[1]);
+            $content = file($model['path']);
 
             foreach ($expectation as $i => $line) {
                 $this->assertEquals($line, trim($content[$i]));
@@ -44,19 +44,19 @@ trait OneToPolymorphicAssertion
 
     private function setFunctionDeclaration(array $pairs, array $to, string $role): string
     {
-        return 'public function ' . ($role == 'to' ? "{$to[0]}able" : ConvertCase::camel($pairs[0], $this->mode == 'oto')) . '()';
+        return 'public function ' . ($role == 'to' ? "{$to['singular']}able" : ConvertCase::camel($pairs[0], $this->mode == 'oto')) . '()';
     }
 
     private function setCodeLine($to, $pairs)
     {
-        $method = $pairs[0] == $to[2] ? $this->methods[$this->mode] : 'morphTo';
+        $method = $pairs[0] == $to['model'] ? $this->methods[$this->mode] : 'morphTo';
 
         return implode('', [
             'return $this->',
             $method,
             '(',
             $method == 'morphTo' ? '' : implode(', ', [
-                "{$pairs[0]}::class", "'{$to[0]}able'"
+                "{$pairs[0]}::class", "'{$to['singular']}able'"
             ]),
             ');'
         ]);
@@ -64,23 +64,23 @@ trait OneToPolymorphicAssertion
 
     private function assertMigrations($from, $to, $models)
     {
-        $migrations = $this->migrations(
-            [$from[1], $to[1], ''],
-            array_map(fn ($x) => $x ?? '', Arr::pluck($models, 2))
+        $migrations = $this->setMigrations(
+            [$from['passed'], $to['passed'], ''],
+            array_map(fn ($x) => $x ?? '', Arr::pluck($models, 'package'))
         );
 
         foreach ($migrations as $role => $migration) {
-            if (!$migration) continue;
+            if (!$migration['path']) continue;
 
-            $this->assertFileExists($migration[1]);
+            $this->assertFileExists($migration['path']);
 
             $expectation = [
-                10 => 'Schema::create(' . Text::wrap($migration[0], 'sq') . ', function (Blueprint $table) {',
-                13 => $role == 'to' ? '$table->integer' . Text::inject("{$to[0]}able_id", ['(', 'sq']) . ';' : '});',
-                14 => $role == 'to' ? '$table->string' . Text::inject("{$to[0]}able_type", ['(', 'sq']) . ';' : '}',
+                10 => 'Schema::create(' . Text::wrap($migration['name'], 'sq') . ', function (Blueprint $table) {',
+                13 => $role == 'to' ? '$table->integer' . Text::inject("{$to['singular']}able_id", ['(', 'sq']) . ';' : '});',
+                14 => $role == 'to' ? '$table->string' . Text::inject("{$to['singular']}able_type", ['(', 'sq']) . ';' : '}',
             ];
 
-            $content = file($migration[1]);
+            $content = file($migration['path']);
 
             foreach ($expectation as $i => $line) {
                 $this->assertEquals($line, trim($content[$i]));

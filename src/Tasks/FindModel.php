@@ -21,7 +21,7 @@ class FindModel
         
         $model = self::getModel($name, ['src', 'Models']);
 
-        if ($model) return $model;
+        return $model;
     }
 
     private static function getModel(string $name, array $folders): string
@@ -29,7 +29,7 @@ class FindModel
         return Arry::get(array_filter(
             Folder::files(self::path($folders)),
             fn ($x) => str_contains($x, Path::glue(['Models', "{$name}.php"]))
-        ), 0);
+        ), 0) ?? '';
     }
 
     private static function path(array $folders): string
