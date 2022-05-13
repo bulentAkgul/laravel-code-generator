@@ -38,7 +38,7 @@ trait OneToAssertion
             $content = file($model['path']);
 
             foreach ($expectation as $i => $line) {
-                $this->assertEquals($line, trim($content[$i]));
+                $this->assertEquals($line, trim($content[$i]), "{$i} {$model['path']}");
             }
         }
     }
