@@ -46,7 +46,7 @@ sail artisan create:relation {relation} {from} {to} {mediator?} {--m|model} {--p
 
 
 
-
+<br>
 
   + **Details**:
     + **package**: It's optional.
