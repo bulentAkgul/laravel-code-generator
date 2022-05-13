@@ -40,7 +40,9 @@ sail artisan create:relation {relation} {from} {to} {mediator?} {--m|model} {--p
 + **Polymorphic**: When the command has  " **-p** " or " **--polymorphic** the relation will be converted to polymorhic of the specified type in the argument named "relation."
 ### Schemas and Details of From, To, and Mediator
 + **From**: This is the "***has***" part of the relationship.
+
   + **Schema**: package/table:column:model
+
   + **Details**:
     + **package**: It's optional.
       + *exists*: Model is searched in the specified package.
