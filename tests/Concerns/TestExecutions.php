@@ -19,18 +19,18 @@ trait TestExecutions
     ) {
         $this->init();
 
-        [$from, $to, $models] = $this->prepareOneTo($names, $packages, $keys, $models);
+        [$from, $to, $modelDetails] = $this->prepareOneTo($names, $packages, $keys, $models);
 
         if ($this->scenario == 'pl') {
             $from['uses'] = Arry::get($uses, 'from') ?? [];
             $to['uses'] = Arry::get($uses, 'to') ?? [];
         }
 
-        $this->create($this->args($this->specs([$from, $to], $keys, $packages)) . $this->opts($isPoly));
+        $this->create($this->args($this->specs([$from, $to], $keys, $packages, $models)) . $this->opts($isPoly));
 
         [$from, $to] = $this->fillSides($from, $to);
 
-        $this->assertCase($from, $to, $models);
+        $this->assertCase($from, $to, $modelDetails);
     }
 
     public function runHasThrough(
