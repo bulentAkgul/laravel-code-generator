@@ -43,6 +43,11 @@ sail artisan create:relation {relation} {from} {to} {mediator?} {--m|model} {--p
 
   + **Schema**: package/table:column:model
 
+
+
+
+
+
   + **Details**:
     + **package**: It's optional.
       + *exists*: Model is searched in the specified package.
