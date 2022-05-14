@@ -3,10 +3,11 @@
 The purpose of this package is to generate code on the target files in order to increase productivity.
 
 ### Installation
+If you installed **[Packagified Laravel](https://github.com/bulentAkgul/packagified-laravel)**, you should have this package already. So skip installation.
 ```
 sail composer require bakgul/laravel-code-generator
 ```
-**NOTE:** Another package named **Laravel File Creator** will not be installed by this one. But this package will need it to create pivot models. If you work with pivot models, install **[Laravel File Creator](https://github.com/bulentAkgul/laravel-file-creator)** afterwards. 
+**NOTE:** Another package named **Laravel File Creator** will not be installed by this one. But this package will need it to create pivot models. If you work with pivot models, install **[Laravel File Creator](https://github.com/bulentAkgul/laravel-file-creator)** afterwards.
 
 ## Eloquent Relationships
 This package can be used to add Eloquent relationship into the models and migrations. The implemented relations are:
@@ -26,6 +27,7 @@ In the future release, **one of many** will also be covered.
 ```
 create:relation {relation} {from} {to} {mediator?} {--m|model} {--p|polymorphic}
 ```
+
 ### Expected Inputs
 + **Relation**: One of the shorthands of the type of the eloquent relationships:
   + **oto** : One to One
@@ -34,14 +36,8 @@ create:relation {relation} {from} {to} {mediator?} {--m|model} {--p|polymorphic}
 + **Model**: While generating a many-to-many relationship, a model for pivot table will be created if " **-m** " or " **--model** " is added to the command.
 + **Polymorphic**: When the command has  " **-p** " or " **--polymorphic** the relation will be converted to polymorhic of the specified relation type in its argument.
 
-### Schemas
-+ **from**: package/table:column:model
-+ **to**:   package/table:column:model
-+ **mediator (as through)**: package/table:column:model
-+ **mediator (as pivot)**: package/table:model
-
-### Schema Details
-+ **From**: This is the "***has***" part of the relationship.
+### Arguments' Schemas and Details
++ **From**: This is the "***has***" part of the relationship. Argument's schema is **package/table:column:model**.
 
   + **package**: It's optional, and will be ignored when you create a "Standalone Laravel" or "Standalone Package".
     + *exists*: Model is searched in the specified package.
@@ -57,7 +53,7 @@ create:relation {relation} {from} {to} {mediator?} {--m|model} {--p|polymorphic}
     + *exists*: You should specify it when the model name can't be produced from the table name.
     + *missing*: model name will be generated from the table name.
 
-+ **To**: This is the "***belongsTo***" part of the relationship.
++ **To**: This is the "***belongsTo***" part of the relationship. Argument's schema is **package/table:column:model**.
 
   + **package**: It's optional, and will be ignored when you create a "Standalone Laravel" or "Standalone Package".
     + *exists*: Model is searched in the specified package.
@@ -69,7 +65,7 @@ create:relation {relation} {from} {to} {mediator?} {--m|model} {--p|polymorphic}
     + *exists*: It will be appended to the "has" part's table name's singular form to generate foreign key. If **from table** is vip_users and **this** is email, then the foreign key will be ***vip_user_email***. When the relation is many-to-many, this will be used as the key in the pivot table. 
     + *missing*: It will be **"id"** and Laravel naming conventions will be applied.
 
-+ **Mediator (as through)**: This is the middleman of the "Has One Through" and "Has Many Through" relationships. So the argument named "mediator" becomes a middleman when the relation is *oto* or *otm*.
++ **Mediator (as through)**: This is the middleman of the "Has One Through" and "Has Many Through" relationships. So the argument named "mediator" becomes a middleman when the relation is *oto* or *otm*. Argument's schema is **package/table:column:model**.
  
   + **package**: It's optional, and will be ignored when you create a "Standalone Laravel" or "Standalone Package".
     + *exists*: Model is searched in the specified package.
@@ -81,7 +77,7 @@ create:relation {relation} {from} {to} {mediator?} {--m|model} {--p|polymorphic}
 
   + **model**: This is optional. It can be specified only when you want your migration and model names are irrelevant.
 
-+ **Mediator (as pivot)**: When the relationship is "Many to Many" the mediator becomes the pivot. It's optional. When it doen't exist, Laravel conventions will be followed. In other words, if **from** is *comments*, and **to** is *posts*, then the migration will be comment_post.
++ **Mediator (as pivot)**: When the relationship is "Many to Many" the mediator becomes the pivot. It's optional. When it doen't exist, Laravel conventions will be followed. In other words, if **from** is *comments*, and **to** is *posts*, then the migration will be comment_post. Argument's schema is **package/table:model**.
 
   + **package**: It's optional.
     + *exists*: Model is searched in the specified package. If it can't be found, it will be created there.
@@ -94,3 +90,9 @@ create:relation {relation} {from} {to} {mediator?} {--m|model} {--p|polymorphic}
 ## Packagified Laravel
 
 The main package that includes this one can be found here: **[Packagified Laravel](https://github.com/bulentAkgul/packagified-laravel)**
+
+## The Packages That Will Be Installed By This Package
++ **[Command Evaluator](https://github.com/bulentAkgul/command-evaluator)**
++ **[File Content](https://github.com/bulentAkgul/file-content)**
++ **[File History](https://github.com/bulentAkgul/file-history)**
++ **[Kernel](https://github.com/bulentAkgul/kernel)**
