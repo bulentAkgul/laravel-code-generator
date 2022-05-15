@@ -28,15 +28,12 @@ In the future release, **one of many** will also be covered.
 create:relation {relation} {from} {to} {mediator?} {--m|model} {--p|polymorphic}
 ```
 
-### Expected Inputs
+### Arguments and Options
 + **Relation**: One of the shorthands of the type of the eloquent relationships:
   + **oto** : One to One
   + **otm** : One to Many
   + **mtm** : Many to Many
-+ **Model**: While generating a many-to-many relationship, a model for pivot table will be created if " **-m** " or " **--model** " is added to the command.
-+ **Polymorphic**: When the command has  " **-p** " or " **--polymorphic** the relation will be converted to polymorhic of the specified relation type in its argument.
 
-### Arguments' Schemas and Details
 + **From**: This is the "***has***" part of the relationship. Argument's schema is **package/table:column:model**.
 
   + **package**: It's optional, and will be ignored when you create a "Standalone Laravel" or "Standalone Package".
@@ -65,7 +62,7 @@ create:relation {relation} {from} {to} {mediator?} {--m|model} {--p|polymorphic}
     + *exists*: It will be appended to the "has" part's table name's singular form to generate foreign key. If **from table** is vip_users and **this** is email, then the foreign key will be ***vip_user_email***. When the relation is many-to-many, this will be used as the key in the pivot table. 
     + *missing*: It will be **"id"** and Laravel naming conventions will be applied.
 
-+ **Mediator (as through)**: This is the middleman of the "Has One Through" and "Has Many Through" relationships. So the argument named "mediator" becomes a middleman when the relation is *oto* or *otm*. Argument's schema is **package/table:column:model**.
++ **Mediator (as bridge)**: This is the middleman of the "Has One Through" and "Has Many Through" relationships. So the argument named "mediator" becomes a middleman when the relation is *oto* or *otm*. Argument's schema is **package/table:column:model**.
  
   + **package**: It's optional, and will be ignored when you create a "Standalone Laravel" or "Standalone Package".
     + *exists*: Model is searched in the specified package.
@@ -86,6 +83,13 @@ create:relation {relation} {from} {to} {mediator?} {--m|model} {--p|polymorphic}
   + **table**: If you pass the mediator block, table name is required.
 
   + **model**: If you want to create a model for the pivot table, you can specify the model name here. If the model name can be produced from the table name like *post_user* and *PostUser*, it's enough to add **-m** to the command instead of specifiying the model name.
+
++ **Model**: While generating a many-to-many relationship, a model for pivot table will be created if " **-m** " or " **--model** " is added to the command.
+
++ **Polymorphic**: When the command has  " **-p** " or " **--polymorphic** the relation will be converted to polymorhic of the specified relation type in its argument.
+
+### Arguments' Schemas and Details
+
 
 ## Packagified Laravel
 
