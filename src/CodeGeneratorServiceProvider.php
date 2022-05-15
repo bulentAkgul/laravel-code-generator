@@ -12,7 +12,7 @@ class CodeGeneratorServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->commands([
-            \Bakgul\CodeGenerator\Commands\CreateRelationshipCommand::class,
+            \Bakgul\CodeGenerator\Commands\GenerateRelationshipCommand::class,
         ]);
     }
 
