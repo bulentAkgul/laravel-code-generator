@@ -38,19 +38,19 @@ class GenerateRelationshipCommand extends Command
             "Has side of the relationship.",
             'package' => [
                 "Optional",
-                "When it's specified, the model and migration are searched in that package.",
+                "The model and migration are searched in that package when it's specified.",
                 "Otherwise, all reasonable paths are checked to find the model and migration.",
                 "It will be ignored when the repository is a Standalone Laravel or Package.",
             ],
             'table' => [
                 "Required",
-                "It should be the migration name's part between 'create_' and '_table'."
+                "It should be the migration file name's part between 'create_' and '_table'."
             ],
             'column' => [
                 "Optional",
-                "The Laravel's conventions will be followed when it's missing.",
-                "Otherwise, the local key of the 'has' side will be the given column.",
-                "It'll be the foreign key when the 'belongsTo' part has 'sno column."
+                "Laravel's conventions will be followed when it's missing. Otherwise,",
+                "the local key of the 'has' side will be the given column. It'll be",
+                "the foreign key when the 'belongsTo' part has no column."
             ],
             'model' => [
                 "Optional",
@@ -62,9 +62,10 @@ class GenerateRelationshipCommand extends Command
             "BelongsTo side of the relationship.",
             'package' => [
                 "Optional",
-                "When it's specified, the model and migration are searched in that package.",
-                "Otherwise, all reasonable paths are checked to find the model and migration.",
-                "It will be ignored when the repository is a Standalone Laravel or Package.",
+                "The model and migration are searched in that package when it's",
+                "specified. Otherwise, all reasonable paths are checked to find",
+                "the model and migration. It will be ignored when the repository",
+                "is a Standalone Laravel or Package.",
             ],
             'table' => [
                 "Required",
@@ -72,23 +73,25 @@ class GenerateRelationshipCommand extends Command
             ],
             'column' => [
                 "Optional",
-                "The Laravel's conventions will be followed when it's missing.",
-                "Otherwise, it'll be the foreign key after prefixed with 'has' side's table name."
+                "Laravel's conventions will be followed when it's missing.",
+                "Otherwise, it'll be the foreign key after being prefixed",
+                "with the 'has' side's table name."
             ],
             'model' => [
                 "Optional",
-                "If the model name can't be produced based on the Laravel's conventions",
-                "out of the table name, it should be specified so we can find it."
+                "If the model name can't be produced based on the Laravel's",
+                "conventions out of the table name, it should be specified",
+                "so we can find it."
             ]
         ],
         'mediator as bridge' => [
-            "'BelongTo' of 'from' and 'Has' of 'to' when relation is 'oto' or 'otm'.",
+            "'BelongTo' of 'from' and 'Has' of 'to' when the relation is 'oto' or 'otm'.",
             'package' => [
                 "Optional",
-                "When it's specified, the model and migration are searched in that package.",
-                "If they aren't found, they will be created there. When it isn't specified,",
-                "model and migration will be searched on all reasonable paths. If the can't",
-                "be found, they will be created in the same folder as 'from' side."
+                "The model and migration are searched in that package when it's specified.",
+                "If they aren't found, they will be created there. Model and migration will",
+                "be searched on all reasonable paths when it isn't specified. If they can't",
+                "be found, they will be created in the same folder as the 'from' side."
             ],
             'table' => [
                 "Required",
@@ -96,12 +99,12 @@ class GenerateRelationshipCommand extends Command
             ],
             'column' => [
                 "Optional",
-                "The Laravel's conventions will be followed when it's missing.",
-                "Two column names glued up with a dot are expected like 'col1.col2'",
-                "The first one is the foreign key for 'from' side while the second one",
-                "is the local key in mediator table for 'to' side. It's possible to",
-                "pass one column. In this case the other one will be 'id'. For example,",
-                "user is user.id, .post is id.post."
+                "Laravel's conventions will be followed when it's missing. The names",
+                "of two columns glued up with a dot are expected, like 'col1.col2'.",
+                "The first is the foreign key for the 'from' side, while the second is",
+                "the local key in the mediator table for the 'to' side. It's possible",
+                "to pass one column. In this case, the other one will be 'id'.",
+                "For example, 'user' is 'user.id', '.post' is 'id.post'."
             ],
             'model' => [
                 "Optional",
@@ -113,10 +116,10 @@ class GenerateRelationshipCommand extends Command
             "Optional: When it's missing in 'mtm', Laravel conventions will be applied.",
             'package' => [
                 "Optional",
-                "When it's specified, the model and migration are searched in that package.",
-                "If they aren't found, they will be created there. When it isn't specified,",
-                "model and migration will be searched on all reasonable paths. If the can't",
-                "be found, they will be created in the same folder as 'from' side."
+                "The model and migration are searched in that package when it's specified.",
+                "If they aren't found, they will be created there. Model and migration will",
+                "be searched on all reasonable paths when it isn't specified. If they can't",
+                "be found, they will be created in the same folder as the 'from' side."
             ],
             'table' => [
                 "Required",
@@ -124,21 +127,20 @@ class GenerateRelationshipCommand extends Command
             ],
             'model' => [
                 "Optional",
-                "When it's specified, a pivot model will be created with the given name."
+                "A pivot model will be created with the given name when it's specified."
             ]
         ],
     ];
 
     protected $options = [
         'model' => [
-            "When it's appended to the command, and the relation is 'mtm', and pivot",
-            "model name is't specified, a pivot model will be created and it's name",
-            "will be generated from the pivot table name."
+            "When it's appended to the command, and the relation is 'mtm', and the",
+            "pivot model name isn't specified, a pivot model will be created. Its",
+            "name will be generated from the pivot table name."
         ],
         'polymorphic' => [
-            "When it's appended to the command, polymorphic version of the relation",
-            "will be generated unless the relation is one of Has One Through or Has",
-            "Many Through since thay don't have their polymorphic version."
+            "When it's appended to the command, a polymorphic version of the relation",
+            "will be generated."
         ]
     ];
 
