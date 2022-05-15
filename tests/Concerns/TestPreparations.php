@@ -98,22 +98,42 @@ trait TestPreparations
         ]));
     }
 
+    public function existingPath($path)
+    {
+        return file_exists($path) ? $path : '';
+    }
+
     public function specs($specs, $keys = [], $packages = [], $models = []): array
     {
         $parts = [];
 
         foreach ($specs as $i => $details) {
             $args = [
-                $m = Text::append(Arry::get($models, $i) ?? '', Settings::seperators('modifier')),
-                Text::append(Arry::get($keys, $i) ?: ($m ? 'id' : ''), Settings::seperators('modifier')),
+                $m = $this->model($models, $i),
+                $this->id($keys, $i, $m),
                 $details['passed'],
-                Text::prepend(Arry::get($packages, $i) ?? '', Settings::seperators('folder')),
+                $this->package($packages, $i),
             ];
 
             $parts[] = implode('', array_reverse($args));
         }
 
         return $parts;
+    }
+
+    private function model($models, $i)
+    {
+        return Text::append(Arry::get($models, $i) ?? '', Settings::seperators('modifier'));
+    }
+
+    private function id($keys, $i, $model)
+    {
+        return $this->mode == 'mtm' && $i == 2 ? '' : Text::append(Arry::get($keys, $i) ?: ($model ? 'id' : ''), Settings::seperators('modifier'));
+    }
+
+    private function package($packages, $i)
+    {
+        return Text::prepend(Arry::get($packages, $i) ?? '', Settings::seperators('folder'));
     }
 
     public function fillSides($from, $to, $mediator = [])
