@@ -2,6 +2,7 @@
 
 namespace Bakgul\CodeGenerator\Tests\Assertions;
 
+use Bakgul\CodeGenerator\Tests\Concerns\AssertionMethods;
 use Bakgul\CodeGenerator\Tests\Functions\AppendUses;
 use Bakgul\Kernel\Helpers\Text;
 use Bakgul\Kernel\Tasks\ConvertCase;
@@ -9,6 +10,8 @@ use Illuminate\Support\Arr;
 
 trait OneToPolymorphicAssertion
 {
+    use AssertionMethods;
+    
     public $methods = ['oto' => 'morphOne', 'otm' => 'morphMany'];
 
     public function assertCase($from, $to, $models)

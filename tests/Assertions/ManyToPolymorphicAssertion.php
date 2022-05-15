@@ -2,6 +2,7 @@
 
 namespace Bakgul\CodeGenerator\Tests\Assertions;
 
+use Bakgul\CodeGenerator\Tests\Concerns\AssertionMethods;
 use Bakgul\CodeGenerator\Tests\Functions\AppendUses;
 use Bakgul\Kernel\Helpers\Arry;
 use Bakgul\Kernel\Helpers\Text;
@@ -10,6 +11,8 @@ use Illuminate\Support\Arr;
 
 trait ManyToPolymorphicAssertion
 {
+    use AssertionMethods;
+    
     public function assertCase($from, $to, $mediator, $models)
     {
         $mediator = $this->mediator($to['singular']);
