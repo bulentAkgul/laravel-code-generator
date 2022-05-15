@@ -47,11 +47,6 @@ trait AssertionMethods
         ));
     }
 
-    private function existingPath($path)
-    {
-        return file_exists($path) ? $path : '';
-    }
-
     public function makeLocalKey(string $key): string
     {
         return $key == 'id' ? '' : '$table->integer' . $this->inject($key) . ';';
