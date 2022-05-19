@@ -48,9 +48,10 @@ class GenerateRelationshipCommand extends Command
             ],
             'column' => [
                 "Optional",
-                "Laravel's conventions will be followed when it's missing. Otherwise,",
-                "the local key of the 'has' side will be the given column. It'll be",
-                "the foreign key when the 'belongsTo' part has no column."
+                "Laravel's conventions will be followed when it's missing.",
+                "Otherwise, the local key of the 'has' side will be the given column.",
+                "It'll be the foreign key when the 'belongsTo' part has no column.",
+                "It won't be prefixed if it ends with '_id.'"
             ],
             'model' => [
                 "Optional",
@@ -75,7 +76,8 @@ class GenerateRelationshipCommand extends Command
                 "Optional",
                 "Laravel's conventions will be followed when it's missing.",
                 "Otherwise, it'll be the foreign key after being prefixed",
-                "with the 'has' side's table name."
+                "with the 'has' side's table name.",
+                "It won't be prefixed if it ends with '_id.'"
             ],
             'model' => [
                 "Optional",
@@ -104,7 +106,8 @@ class GenerateRelationshipCommand extends Command
                 "The first is the foreign key for the 'from' side, while the second is",
                 "the local key in the mediator table for the 'to' side. It's possible",
                 "to pass one column. In this case, the other one will be 'id'.",
-                "For example, 'user' is 'user.id', '.post' is 'id.post'."
+                "For example, 'user' is 'user.id', '.post' is 'id.post'.",
+                "It won't be prefixed if it ends with '_id.'"
             ],
             'model' => [
                 "Optional",
@@ -145,15 +148,15 @@ class GenerateRelationshipCommand extends Command
     ];
 
     protected $examples = [
-        'otm posts comments | Create <info>One To Many</info> between <info>posts</info> (hasMany) and <info>comments</info> (belongsTo)',
-        'otm posts comments -p | Create <info>One To Many Polymorphic</info> between <info>posts</info> (hasMany) and <info>comments</info> (belongsTo)',
-        'oto mechanics owners cars | Create <info>Has One Through</info> between <info>mechanics</info> (hasOne) and <info>owners</info> (belongsTo) through <info>cars</info> (belongsTo mechanics, hasOne owner)',
-        'mtm posts images | Create <info>Many To Many</info> between <info>posts</info> and <info>images</info> with pivot <info>image_post</info>',
-        'mtm posts images -m | Create <info>Many To Many</info> between <info>posts</info> and <info>images</info> with pivot table <info>image_post</info> and pivot model <info>ImagePost</info>',
-        'mtm posts:slug images | Create <info>Many To Many</info> between <info>posts</info> and <info>images</info> with pivot <info>image_post</info> whose foreign keys are <info>post_slug</info> and <info>image_id</info>',
-        'mtm posts images media | Create <info>Many To Many</info> between <info>posts</info> and <info>images</info> with pivot <info>media</info>',
-        'mtm posts images media:my-media | Create <info>Many To Many</info> between <info>posts</info> and <info>images</info> with pivot model <info>MyMedia</info> whose table <info>media</info>',
-        'oto users phones:mobile | Create <info>One To One</info> between <info>users</info> (hasOne) and <info>phones</info> (belongsTo) where the foreign key <info>user_mobile</info>',
+        "otm posts comments | Create <info>One To Many</info> between <info>posts</info> (hasMany) and <info>comments</info> (belongsTo)",
+        "otm posts comments -p | Create <info>One To Many Polymorphic</info> between <info>posts</info> (hasMany) and <info>comments</info> (belongsTo)",
+        "oto mechanics owners cars | Create <info>Has One Through</info> between <info>mechanics</info> (hasOne) and <info>owners</info> (belongsTo) through <info>cars</info> (belongsTo mechanics, hasOne owner)",
+        "mtm posts images | Create <info>Many To Many</info> between <info>posts</info> and <info>images</info> with pivot <info>image_post</info>",
+        "mtm posts images -m | Create <info>Many To Many</info> between <info>posts</info> and <info>images</info> with pivot table <info>image_post</info> and pivot model <info>ImagePost</info>",
+        "mtm posts:slug images | Create <info>Many To Many</info> between <info>posts</info> and <info>images</info> with pivot <info>image_post</info> whose foreign keys are <info>post_slug</info> and <info>image_id</info>",
+        "mtm posts images media | Create <info>Many To Many</info> between <info>posts</info> and <info>images</info> with pivot <info>media</info>",
+        "mtm posts images media:my-media | Create <info>Many To Many</info> between <info>posts</info> and <info>images</info> with pivot model <info>MyMedia</info> whose table <info>media</info>",
+        "oto users phones:mobile | Create <info>One To One</info> between <info>users</info> (hasOne) and <info>phones</info> (belongsTo) where the foreign key <info>user_mobile</info>",
     ];
 
     public $command;

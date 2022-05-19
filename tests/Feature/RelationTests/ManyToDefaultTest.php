@@ -50,9 +50,15 @@ class ManyToDefaultTest extends TestCase
     }
 
     /** @test */
-    public function mm_with_pivot_with_different_model_with_from_key_wit_to_key()
+    public function mm_with_pivot_with_different_model_with_keys()
     {
         $this->runManyToTest(['', '', 'image_file'], keys: ['from', 'to', ''], models: ['', '', 'image'], isMediatorless: false, hasModel: true);
+    }
+
+    /** @test */
+    public function mm_with_pivot_with_different_model_with_full_keys()
+    {
+        $this->runManyToTest(['', '', 'image_file'], keys: ['from_id', 'to_id', ''], models: ['', '', 'image'], isMediatorless: false, hasModel: true);
     }
 
     /** @test */

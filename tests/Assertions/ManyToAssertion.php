@@ -97,8 +97,8 @@ trait ManyToAssertion
 
     private function makeKeys($keys, $side, $pair, $mediator)
     {
-        $output[2] = $keys[0] != 'id' ? "{$pair['singular']}_{$keys[0]}" : '';
-        $output[1] = $keys[1] != 'id' || $output[2] ?  "{$side['singular']}_{$keys[1]}" : '';
+        $output[2] = substr($keys[0], -3) == '_id' ? $keys[0] : ($keys[0] != 'id' ? "{$pair['singular']}_{$keys[0]}" : '');
+        $output[1] = substr($keys[1], -3) == '_id' ? $keys[1] : ($keys[1] != 'id' || $output[2] ?  "{$side['singular']}_{$keys[1]}" : '');
         $output[0] = $this->isNotDefaultTable($side, $pair, $mediator['passed']) || $output[1] ? $mediator['passed'] : '';
 
         return array_filter(array_reverse($output));
@@ -145,7 +145,11 @@ trait ManyToAssertion
     {
         if ($role == 'mediator') {
             $side = $isFirstLine ? $from : $to;
-            return $this->makeLocalKey("{$side['singular']}_{$side['key']}");
+            return $this->makeLocalKey(
+                str_contains($side['key'], '_id')
+                    ? $side['key']
+                    : "{$side['singular']}_{$side['key']}"
+            );
         }
 
         return $isFirstLine

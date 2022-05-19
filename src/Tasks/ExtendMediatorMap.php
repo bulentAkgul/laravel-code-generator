@@ -3,6 +3,7 @@
 namespace Bakgul\CodeGenerator\Tasks;
 
 use Bakgul\CodeGenerator\Functions\HasPivotModel;
+use Bakgul\CodeGenerator\Functions\IsKeyFull;
 use Bakgul\Kernel\Helpers\Text;
 use Bakgul\Kernel\Tasks\ConvertCase;
 
@@ -39,7 +40,9 @@ class ExtendMediatorMap
 
     private static function setKey($attr, $side)
     {
-        return ConvertCase::snake($attr["{$side}_table"], true) . '_' . $attr["{$side}_key"];
+        return IsKeyFull::_($attr["{$side}_key"])
+            ? $attr["{$side}_key"]
+            : ConvertCase::snake($attr["{$side}_table"], true) . '_' . $attr["{$side}_key"];
     }
 
     private static function setTable(array $attr, string $keys): string

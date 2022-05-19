@@ -48,9 +48,21 @@ class HasThroughKeyVariationsTest extends TestCase
     }
 
     /** @test */
+    public function ht_with_from_without_to_with_mediator_full_from()
+    {
+        $this->runHasThrough(keys: ['month', '', 'first_id']);
+    }
+
+    /** @test */
     public function ht_with_from_without_to_with_mediator_to()
     {
         $this->runHasThrough(keys: ['month', '', 'id.second']);
+    }
+
+    /** @test */
+    public function ht_with_from_without_to_with_mediator_full_to()
+    {
+        $this->runHasThrough(keys: ['month', '', 'id.second_id']);
     }
 
     /** @test */
@@ -78,6 +90,12 @@ class HasThroughKeyVariationsTest extends TestCase
     }
 
     /** @test */
+    public function ht_without_from_with_to_with_mediator_full_to()
+    {
+        $this->runHasThrough(keys: ['', 'week', 'id.second_id']);
+    }
+
+    /** @test */
     public function ht_without_from_with_to_with_mediator_both()
     {
         $this->runHasThrough(keys: ['', 'week', 'first.second']);
@@ -87,6 +105,12 @@ class HasThroughKeyVariationsTest extends TestCase
     public function ht_with_from_with_to_without_mediator()
     {
         $this->runHasThrough(keys: ['day', 'week', '']);
+    }
+
+    /** @test */
+    public function ht_with_from_with_full_to_without_mediator()
+    {
+        $this->runHasThrough(keys: ['day', 'week_id', '']);
     }
 
     /** @test */

@@ -19,7 +19,7 @@ class RelationCodeService extends CodeGenerator
     public static function create($request)
     {
         self::makeRequest($request);
-
+ray(self::$request);
         self::insertModelCodes();
 
         self::insertMigrationLines();

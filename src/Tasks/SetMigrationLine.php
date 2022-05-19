@@ -2,6 +2,7 @@
 
 namespace Bakgul\CodeGenerator\Tasks;
 
+use Bakgul\CodeGenerator\Functions\IsKeyFull;
 use Bakgul\Kernel\Helpers\Text;
 use Bakgul\Kernel\Tasks\ConvertCase;
 
@@ -32,7 +33,11 @@ class SetMigrationLine
         $lines = [];
         
         foreach (['from', 'to'] as $side) {
-            $lines[] = self::makeLocalKey("{$request['map'][$side]}_{$request['attr'][$side . '_key']}");
+            $lines[] = self::makeLocalKey(
+                IsKeyFull::_($request['attr'][$side . '_key'])
+                    ? $request['attr'][$side . '_key']
+                    : "{$request['map'][$side]}_{$request['attr'][$side . '_key']}"
+            );
         }
 
         return implode(self::glue(';'), $lines);
@@ -137,15 +142,21 @@ class SetMigrationLine
 
     private static function oldSyntaxDeclaration($table, $keys)
     {
-        return '$table->unsignedBigInteger'
-             . self::inject("{$table}_" . ( $keys[1] != 'id' ? $keys[1] : $keys[2]));
+        return '$table->unsignedBigInteger' . self::foreignKey($table, $keys);
+    }
+
+    private static function foreignKey($table, $keys)
+    {
+        if (IsKeyFull::_($keys[1])) return self::inject($keys[1]);
+
+        return self::inject("{$table}_" . ($keys[1] != 'id' ? $keys[1] : $keys[2]));
     }
 
     private static function oldSyntaxDetails($ref, $table, $keys)
     {
         return implode('', [
             '$table->foreign',
-            self::inject("{$ref}_" . ($keys[1] != 'id' ? $keys[1] : $keys[2])),
+            self::foreignKey($ref, $keys),
             '->references',
             self::inject($keys[0]),
             '->on',

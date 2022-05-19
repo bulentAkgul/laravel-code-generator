@@ -50,7 +50,7 @@ create:relation {relation} {from} {to} {mediator?} {--m|model} {--p|polymorphic}
   + **table**: It's required, and it should be the migration file's name's part between "create_" and "_table".
 
   + **column**: It's optional.
-    + *exists*: The local key will be the given column. If it doesn't exist, it will be added as an integer. When the relation is one-to-many or many-to-many, this will be used to create the foreign key inside the inverse part of the relation. For example, if the table is users and the column is email, then the foreing key will be user_email. When the relation is many-to-many, this will be used in the pivot table.
+    + *exists*: The local key will be the given column. If it doesn't exist, it will be added as an integer. When the relation is one-to-many or many-to-many, this will be used to create the foreign key inside the inverse part of the relation. For example, if the **table** is *users* and the **column** is *email*, then the foreing key will be ***user_email*** unless the inverse part has column. When the relation is many-to-many, this will be used in the pivot table.
     + *missing*: It will be "**id**" and Laravel naming conventions will be applied.
 
   + **model**: It's optional.
@@ -66,7 +66,7 @@ create:relation {relation} {from} {to} {mediator?} {--m|model} {--p|polymorphic}
   + **table**: It's required, and it should be the migration file's name's part between "create_" and "_table".
 
   + **column**: It's optional.
-    + *exists*: It will be appended to the "has" part's table name's singular form to generate foreign key. If **from table** is vip_users and **column** is email, then the foreign key will be **vip_user_email**. When the relation is many-to-many, this will be used as the key in the pivot table. 
+    + *exists*: If it ends with "**_id**," it will be used directly. Otherwise, it will be appended to the "has" part's table name's singular form to generate foreign key. If **from table** is *vip_users* and **column** is *email*, then the foreign key will be ***vip_user_email***. But if the **column** is *user_id*, the foreign key will be ***user_id***. When the relation is many-to-many, this will be used as the key in the pivot table. 
     + *missing*: It will be **"id"** and Laravel naming conventions will be applied.
 
 + **mediator (as bridge)**: This is the middleman of the "Has One Through" and "Has Many Through" relationships. So the argument named "mediator" becomes a middleman when the relation is **oto** or **otm**. Argument's schema is **package/table:column:model**.
@@ -77,7 +77,7 @@ create:relation {relation} {from} {to} {mediator?} {--m|model} {--p|polymorphic}
  
   + **table**: It's required, and it should be the migration file's name's part between "create_" and "_table".
   
-  + **column**: This is also optional, but it's internal schema is diffetent than the columns of the other arguments. What it's expected here is two column names that glued up with a dot (col_1.col_2). The first column is the foreign key that is connected to the **has** side, while the second one is the local key that related to the **belongsTo** side. That being said, you can specify one column name too. The other one will be "id" in this case. "email" is equal to "email.id" and ".email" is equal to "id.email" and no column means "id.id"
+  + **column**: This is also optional, but it's internal schema is diffetent than the columns of the other arguments. What it's expected here is two column names that glued up with a dot **(col_1.col_2)**. The first column is the foreign key that is connected to the **has** side, while the second one is the local key that related to the **belongsTo** side. That being said, you can specify only one column name. The other one will be "id" in this case. "email" is equal to "email.id" and ".email" is equal to "id.email" and no column means "id.id." Finally, if the second key ends with "**_id**," it will be used without prefixed with table name.
 
   + **model**: This is optional. It can be specified only when you want your migration and model names are irrelevant.
 

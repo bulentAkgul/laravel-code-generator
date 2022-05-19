@@ -2,6 +2,7 @@
 
 namespace Bakgul\CodeGenerator\Tasks;
 
+use Bakgul\CodeGenerator\Functions\IsKeyFull;
 use Bakgul\Kernel\Helpers\Arry;
 use Bakgul\Kernel\Helpers\Text;
 use Bakgul\Kernel\Tasks\ConvertCase;
@@ -73,12 +74,19 @@ class SetKeys
 
     private static function setPrefixedKey(array $attr, string $key, string $pair, string $after): string
     {
+        if (self::isKeyFull($attr, $key)) return self::append($attr["{$key}_key"]);
+
         if (self::isNotKeyable($attr["{$key}_key"], $after)) return '';
     
         return self::append(implode('_', [
             self::setPrefix($attr, explode('_', $pair)[0]),
             self::setKey($attr, $key, $pair)
         ]));
+    }
+
+    private static function isKeyFull(array $attr, string $key)
+    {
+        return $key == 'to' && IsKeyFull::_($attr["{$key}_key"]);
     }
 
     private static function setUnprefixedKey(array $attr, string $key, string $after = ''): string

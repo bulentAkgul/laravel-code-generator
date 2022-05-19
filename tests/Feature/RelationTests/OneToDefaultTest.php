@@ -51,6 +51,12 @@ class OneToDefaultTest extends TestCase
     }
 
     /** @test */
+    public function ot_without_package_with_from_key_with_full_to_key()
+    {
+        $this->runOneTo(keys: ['from', 'to_id', '']);
+    }
+
+    /** @test */
     public function ot_without_package_with_keys()
     {
         $this->runOneTo(keys: ['from', 'to', '']);

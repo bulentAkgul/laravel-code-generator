@@ -86,6 +86,7 @@ trait OneToAssertion
     private function foreignKey($from, $to, $after)
     {
         return match (true) {
+            str_contains($to['key'], '_id') => $to['key'],
             $to['key'] != 'id' => "{$from['singular']}_{$to['key']}",
             $from['key'] != 'id' => "{$from['singular']}_{$from['key']}",
             default => $after ? "{$from['singular']}_id" : '',
@@ -168,23 +169,28 @@ trait OneToAssertion
     private function newSyntax($from, $to)
     {
         return '$table->foreignId'
-            . Text::inject("{$from['singular']}_" . ($to['key'] ?: $from['key'] ?: 'id'), ['(', 'sq'])
+            . $this->inject("{$from['singular']}_" . ($to['key'] ?: $from['key'] ?: 'id'))
             . '->constrained'
-            . Text::inject($from['passed'], ['(', 'sq']) . ';';
+            . $this->inject($from['passed']) . ';';
     }
 
     private function oldSyntaxDeclaration($from, $to)
     {
         return '$table->unsignedBigInteger'
-            . Text::inject("{$from['singular']}_" . ($to['key'] != 'id' ? $to['key'] : $from['key']), ['(', 'sq'])
+            . $this->inject($this->tableForeignKey($from, $to['key']))
             . ';';
+    }
+
+    private function tableForeignKey($from, $toKey)
+    {
+        return str_contains($toKey, '_id') ? $toKey : "{$from['singular']}_" . ($toKey != 'id' ? $toKey : $from['key']);
     }
 
     private function oldSyntaxDetails($from, $to)
     {
         return implode('', [
             '$table->foreign',
-            $this->inject("{$from['singular']}_" . ($to['key'] != 'id' ? $to['key'] : $from['key'])),
+            $this->inject($this->tableForeignKey($from, $to['key'])),
             '->references',
             $this->inject($from['key']),
             '->on',

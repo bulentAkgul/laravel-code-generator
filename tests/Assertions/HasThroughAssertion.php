@@ -4,8 +4,6 @@ namespace Bakgul\CodeGenerator\Tests\Assertions;
 
 use Bakgul\CodeGenerator\Tests\Concerns\AssertionMethods;
 use Bakgul\CodeGenerator\Tests\Functions\AppendUses;
-use Bakgul\Kernel\Helpers\Arry;
-use Bakgul\Kernel\Helpers\Settings;
 use Bakgul\Kernel\Helpers\Text;
 use Bakgul\Kernel\Tasks\ConvertCase;
 use Illuminate\Support\Arr;
@@ -86,7 +84,7 @@ trait HasThroughAssertion
         $mk = $mkTail ? "{$from['singular']}_{$mkTail}" : '';
 
         $tkTail = $to['key'] != 'id' ? $to['key'] : $mediator['key'][1];
-        $tk = $tkTail == 'id' ? '' : "{$mediator['singular']}_{$tkTail}";
+        $tk = $tkTail == 'id' ? '' : (str_contains($to['key'], '_id') ? $to['key'] : "{$mediator['singular']}_{$tkTail}");
 
         $fi = $from['key'] == 'id' ? '' : $from['key'];
         $mi = $mediator['key'][1] == 'id' ? '' : $mediator['key'][1];
@@ -197,7 +195,7 @@ trait HasThroughAssertion
     private function setToSecondLine($to, $mediator)
     {
         $mediator = $this->setMediator($mediator, 'to');
-        
+
         return $this->isToOld($to, $mediator)
             ? $this->setOldSyntaxDetails([$mediator, $to])
             : $this->close();
@@ -271,14 +269,11 @@ trait HasThroughAssertion
 
     private function makeKey($sides)
     {
-        return "{$this->snake($sides[0]['singular'])}_{$this->setKey($sides)}";
-    }
-
-    private function setKey($sides)
-    {
-        return $sides[1]['key'] == 'id'
+        $key = $sides[1]['key'] == 'id'
             ? ($sides[0]['key'] == 'id' ? 'id' : $sides[0]['key'])
             : $sides[1]['key'];
+
+        return str_contains($key, '_id') && $key != $sides[0]['key'] ? $key : "{$this->snake($sides[0]['singular'])}_{$key}";
     }
 
     private function setNewSyntax(array $side)
