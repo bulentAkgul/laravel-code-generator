@@ -5,7 +5,6 @@ namespace Bakgul\CodeGenerator\Tests\Concerns;
 use Bakgul\Kernel\Helpers\Arry;
 use Bakgul\Kernel\Helpers\Path;
 use Bakgul\Kernel\Helpers\Text;
-use Carbon\Carbon;
 
 trait AssertionMethods
 {
@@ -30,13 +29,8 @@ trait AssertionMethods
             $package ? Path::package($package) : $this->testPackage['path'],
             'database',
             'migrations',
-            $this->migration($name)
+            "000000_create_{$name}_table.php"
         ]));
-    }
-
-    protected function migration(string $name)
-    {
-        return Carbon::today()->format('Y_m_d') . "_000000_create_{$name}_table.php";
     }
 
     public function getPair($models, $name)
