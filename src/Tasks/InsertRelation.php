@@ -17,7 +17,7 @@ class InsertRelation
 
         [$start, $indentation] = self::getSpecs();
 
-        WriteToFile::handle(
+        WriteToFile::_(
             self::insertCode($code, $indentation, $start),
             $request['attr']['target_file']
         );
