@@ -56,8 +56,6 @@ class ExtendMediatorMap
 
     private static function hasTable($attr, $keys)
     {
-        return !HasPivotModel::_($attr)
-            && $attr['mediator_table'] != $attr['default_pivot_table']
-            || $keys;
+        return $attr['mediator_table'] != $attr['default_pivot_table'] || $keys;
     }
 }

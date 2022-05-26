@@ -32,10 +32,10 @@ trait ManyToAssertion
             $remove = $role == 'mediator' ? 1 : 0;
 
             $expectation = AppendUses::_($$role['uses'], $add) + [
-                7 + $add - $remove => "class {$model['name']} extends " . ($role == 'mediator' ? 'Pivot' : 'Model')
+                8 + $add - $remove => "class {$model['name']} extends " . ($role == 'mediator' ? 'Pivot' : 'Model')
             ] + ($role == 'from' ? [
-                11 + $add - $remove => $this->setFunctionDeclaration($pairs, $role),
-                13 + $add - $remove => $this->setCodeLine($from, $to, $mediator, $models, $pairs, $role)
+                17 + $add - $remove => $this->setFunctionDeclaration($pairs, $role),
+                19 + $add - $remove => $this->setCodeLine($from, $to, $mediator, $models, $pairs, $role)
             ] : []);
 
             $content = file($model['path']);
@@ -69,9 +69,10 @@ trait ManyToAssertion
     {
         $pair = Arry::find([$from, $to], $pairs[0], 'model')['value'];
 
-        $keys = $this->makeKeys([$pair['key'], $$role['key']], $role == 'from' ? $from : $to, $pair, $mediator);
-
-        $keys = count($keys) == 1 && $using ? [] : array_map(fn ($x) => Text::wrap($x, 'sq'), $keys);
+        $keys = array_map(
+            fn ($x) => Text::wrap($x, 'sq'),
+            $this->makeKeys([$pair['key'], $$role['key']], $role == 'from' ? $from : $to, $pair, $mediator)
+        );
 
         return Text::append(implode(', ', $keys), ', ');
     }
