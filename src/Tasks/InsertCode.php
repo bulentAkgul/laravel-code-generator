@@ -40,7 +40,8 @@ class InsertCode
             'part' => 'lines',
             'repeat' => 2,
             'isSortable' => false,
-            'eol' => ';'
+            'eol' => ';',
+            'jump' => ''
         ];
     }
 }
