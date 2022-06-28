@@ -5,6 +5,7 @@ namespace Bakgul\CodeGenerator\Tasks;
 use Bakgul\Kernel\Helpers\Convention;
 use Bakgul\Kernel\Helpers\Isolation;
 use Bakgul\Kernel\Helpers\Settings;
+use Bakgul\Kernel\Tasks\FindModel;
 
 class FindPackage
 {

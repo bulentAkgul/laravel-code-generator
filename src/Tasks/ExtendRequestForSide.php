@@ -6,6 +6,7 @@ use Bakgul\Kernel\Helpers\Arry;
 use Bakgul\Kernel\Helpers\Package;
 use Bakgul\Kernel\Helpers\Path;
 use Bakgul\Kernel\Helpers\Settings;
+use Bakgul\Kernel\Tasks\FindModel;
 use Bakgul\Kernel\Tasks\GenerateNamespace;
 
 class ExtendRequestForSide
@@ -119,6 +120,7 @@ class ExtendRequestForSide
         ]);
 
         if (file_exists($path)) return $path;
+        
         return FindModel::_($request['map'][$side]);
     }
 
