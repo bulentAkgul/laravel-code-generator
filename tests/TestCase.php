@@ -17,8 +17,8 @@ class TestCase extends BaseTestCase
 
     protected function init(string $mode = '', string $scenario = '')
     {
-        $this->mode = $mode ?: Arry::random(['oto', 'otm'])[0];
-        $this->scenario = $scenario ?: Arry::random(['sl', 'sp', 'pl'])[0];
+        $this->mode = $mode ?: Arry::random(['oto', 'otm']);
+        $this->scenario = $scenario ?: Arry::random(['sl', 'sp', 'pl']);
         $this->setupTest($this->scenario);
     }
 
